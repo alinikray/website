@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Menu, X, User, Film, Tv, Home, Compass,
-  Bookmark, ChevronDown
+  Bookmark, ChevronDown, Crown, Settings, LogIn
 } from 'lucide-react';
 
 export default function Header() {
@@ -34,12 +34,18 @@ export default function Header() {
     }
   };
 
+  const isActive = (path: string) => {
+    if (path === '/') return location.pathname === '/';
+    if (path.startsWith('/search')) return location.pathname === '/search';
+    return location.pathname.startsWith(path);
+  };
+
   const navItems = [
-    { path: '/', label: 'Home', icon: Home, highlight: false },
-    { path: '/search?type=movies', label: 'Movies', icon: Film, highlight: false },
-    { path: '/search?type=series', label: 'Series', icon: Tv, highlight: false },
+    { path: '/', label: 'Home', icon: Home },
+    { path: '/search?type=movies', label: 'Movies', icon: Film },
+    { path: '/search?type=series', label: 'Series', icon: Tv },
     { path: '/explore', label: 'Explore', icon: Compass, highlight: true },
-    { path: '/watchlist', label: 'Watchlist', icon: Bookmark, highlight: false },
+    { path: '/watchlist', label: 'Watchlist', icon: Bookmark },
   ];
 
   return (
@@ -71,32 +77,45 @@ export default function Header() {
 
               {/* Desktop Navigation */}
               <nav className="hidden md:flex items-center gap-1">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.label}
-                    to={item.path}
-                    className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      item.highlight
-                        ? location.pathname === '/explore'
-                          ? 'text-white bg-accent-600'
-                          : 'text-accent-400 hover:text-white hover:bg-accent-600/30'
-                        : location.pathname === item.path
-                          ? 'text-white bg-dark-800/50'
-                          : 'text-gray-400 hover:text-white hover:bg-dark-800/30'
-                    }`}
-                  >
-                    <item.icon className="w-4 h-4" />
-                    {item.label}
-                    {item.highlight && location.pathname !== '/explore' && (
-                      <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-accent-400 animate-pulse" />
-                    )}
-                  </Link>
-                ))}
+                {navItems.map((item) => {
+                  const active = isActive(item.path);
+                  const isExplore = item.highlight;
+                  return (
+                    <Link
+                      key={item.label}
+                      to={item.path}
+                      className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                        active
+                          ? isExplore
+                            ? 'text-white bg-accent-600'
+                            : 'text-white bg-dark-800/70'
+                          : isExplore
+                            ? 'text-accent-400 hover:text-white hover:bg-accent-600/30'
+                            : 'text-gray-400 hover:text-white hover:bg-dark-800/30'
+                      }`}
+                    >
+                      <item.icon className="w-4 h-4" />
+                      {item.label}
+                      {isExplore && !active && (
+                        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-accent-400 animate-pulse" />
+                      )}
+                    </Link>
+                  );
+                })}
               </nav>
             </div>
 
             {/* Right Section */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              {/* Subscription Badge */}
+              <Link
+                to="/subscription"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-400 text-xs font-semibold hover:from-amber-500/30 hover:to-orange-500/30 transition-all"
+              >
+                <Crown className="w-3.5 h-3.5" />
+                Premium
+              </Link>
+
               {/* Search Button */}
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -121,7 +140,7 @@ export default function Header() {
 
                 {/* Dropdown Menu */}
                 <div className="absolute right-0 top-full mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right scale-95 group-hover:scale-100">
-                  <div className="glass rounded-xl py-2 min-w-[180px] shadow-xl">
+                  <div className="glass rounded-xl py-2 min-w-[200px] shadow-xl">
                     <Link
                       to="/profile"
                       className="flex items-center gap-3 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-dark-700/50 transition-colors"
@@ -136,6 +155,20 @@ export default function Header() {
                       <Bookmark className="w-4 h-4" />
                       <span className="text-sm">Watchlist</span>
                     </Link>
+                    <Link
+                      to="/settings"
+                      className="flex items-center gap-3 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-dark-700/50 transition-colors"
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span className="text-sm">Settings</span>
+                    </Link>
+                    <Link
+                      to="/subscription"
+                      className="flex items-center gap-3 px-4 py-2.5 text-amber-400 hover:text-amber-300 hover:bg-dark-700/50 transition-colors"
+                    >
+                      <Crown className="w-4 h-4" />
+                      <span className="text-sm">Upgrade to Premium</span>
+                    </Link>
                     <div className="h-px bg-dark-700 my-2" />
                     <Link
                       to="/admin"
@@ -143,6 +176,14 @@ export default function Header() {
                     >
                       <Film className="w-4 h-4" />
                       <span className="text-sm">Admin Panel</span>
+                    </Link>
+                    <div className="h-px bg-dark-700 my-2" />
+                    <Link
+                      to="/auth"
+                      className="flex items-center gap-3 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-dark-700/50 transition-colors"
+                    >
+                      <LogIn className="w-4 h-4" />
+                      <span className="text-sm">Sign In / Register</span>
                     </Link>
                   </div>
                 </div>
@@ -221,25 +262,51 @@ export default function Header() {
             className="fixed top-16 left-0 right-0 z-40 md:hidden bg-dark-900/95 backdrop-blur-xl border-t border-dark-800"
           >
             <nav className="py-4 px-4 space-y-1">
-              {navItems.map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.path}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                    item.highlight && location.pathname !== '/explore'
-                      ? 'text-accent-400 hover:bg-accent-600/20'
-                      : location.pathname === item.path
-                        ? 'text-white bg-accent-600/20'
-                        : 'text-gray-400 hover:text-white hover:bg-dark-800'
-                  }`}
-                >
-                  <item.icon className="w-5 h-5" />
-                  <span className="font-medium">{item.label}</span>
-                  {item.highlight && location.pathname !== '/explore' && (
-                    <span className="ml-auto px-2 py-0.5 rounded-full bg-accent-600/30 text-accent-400 text-xs">New</span>
-                  )}
-                </Link>
-              ))}
+              {navItems.map((item) => {
+                const active = isActive(item.path);
+                const isExplore = item.highlight;
+                return (
+                  <Link
+                    key={item.label}
+                    to={item.path}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                      active
+                        ? 'text-white bg-accent-600/20 border border-accent-500/20'
+                        : isExplore
+                          ? 'text-accent-400 hover:bg-accent-600/20'
+                          : 'text-gray-400 hover:text-white hover:bg-dark-800'
+                    }`}
+                  >
+                    <item.icon className="w-5 h-5" />
+                    <span className="font-medium">{item.label}</span>
+                    {isExplore && !active && (
+                      <span className="ml-auto px-2 py-0.5 rounded-full bg-accent-600/30 text-accent-400 text-xs">New</span>
+                    )}
+                  </Link>
+                );
+              })}
+              <div className="h-px bg-dark-800 my-2" />
+              <Link
+                to="/subscription"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-amber-400 hover:bg-amber-500/10 transition-all"
+              >
+                <Crown className="w-5 h-5" />
+                <span className="font-medium">Premium Plans</span>
+              </Link>
+              <Link
+                to="/settings"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-dark-800 transition-all"
+              >
+                <Settings className="w-5 h-5" />
+                <span className="font-medium">Settings</span>
+              </Link>
+              <Link
+                to="/auth"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-dark-800 transition-all"
+              >
+                <LogIn className="w-5 h-5" />
+                <span className="font-medium">Sign In / Register</span>
+              </Link>
             </nav>
           </motion.div>
         )}

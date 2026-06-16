@@ -106,6 +106,46 @@ export default function MovieDetailPage() {
               <div className="w-[170px] md:w-[240px] rounded-2xl overflow-hidden shadow-2xl shadow-black/60 ring-1 ring-white/10">
                 <img src={movie.poster} alt={movie.title} className="w-full aspect-[2/3] object-cover" />
               </div>
+              {/* Compact rating below poster */}
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-gray-500">IMDb</span>
+                  <div className="flex items-center gap-1 text-yellow-400 font-bold">
+                    <Star className="w-3.5 h-3.5 fill-current" />
+                    {movie.rating}
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 text-center">Rate this movie</p>
+                <div className="flex justify-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <motion.button
+                      key={star}
+                      whileHover={{ scale: 1.2 }}
+                      whileTap={{ scale: 0.9 }}
+                      onMouseEnter={() => setHoverRating(star * 2)}
+                      onMouseLeave={() => setHoverRating(0)}
+                      onClick={() => setUserRating(star * 2)}
+                    >
+                      <Star
+                        className={`w-5 h-5 transition-colors ${
+                          star * 2 <= (hoverRating || userRating)
+                            ? 'text-yellow-400 fill-current'
+                            : 'text-gray-700'
+                        }`}
+                      />
+                    </motion.button>
+                  ))}
+                </div>
+                {userRating > 0 && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-xs text-accent-400 text-center"
+                  >
+                    Your rating: {userRating}/10
+                  </motion.p>
+                )}
+              </div>
             </motion.div>
 
             {/* Info */}
@@ -247,74 +287,29 @@ export default function MovieDetailPage() {
             <h2 className="text-xl font-bold text-white mb-5">Cast</h2>
             <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
               {movie.cast.map((member, index) => (
-                <motion.div
-                  key={member.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3 + index * 0.04 }}
-                  className="flex-shrink-0 w-[120px] md:w-[140px] text-center"
-                >
-                  <div className="w-[100px] md:w-[120px] h-[100px] md:h-[120px] rounded-2xl overflow-hidden mb-2.5 mx-auto ring-1 ring-white/10">
-                    <img
-                      src={member.photo}
-                      alt={member.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${member.name}&background=7C3AED&color=fff&size=120`;
-                      }}
-                    />
-                  </div>
-                  <p className="text-sm font-medium text-white line-clamp-1">{member.name}</p>
-                  <p className="text-xs text-accent-400 mt-0.5 line-clamp-1">{member.role}</p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.section>
-
-          {/* USER RATING */}
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mt-10 md:mt-14"
-          >
-            <div className="glass rounded-2xl p-6">
-              <h2 className="text-lg font-bold text-white mb-4">Rate this movie</h2>
-              <div className="flex items-center gap-2 mb-3">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
-                  <motion.button
-                    key={star}
-                    whileHover={{ scale: 1.2 }}
-                    whileTap={{ scale: 0.9 }}
-                    onMouseEnter={() => setHoverRating(star)}
-                    onMouseLeave={() => setHoverRating(0)}
-                    onClick={() => setUserRating(star)}
-                    className="transition-colors"
+                <Link key={member.id} to={`/actor/${member.id}`}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.3 + index * 0.04 }}
+                    whileHover={{ scale: 1.04 }}
+                    className="flex-shrink-0 w-[120px] md:w-[140px] text-center"
                   >
-                    <Star
-                      className={`w-6 h-6 md:w-8 md:h-8 transition-colors ${
-                        star <= (hoverRating || userRating)
-                          ? 'text-yellow-400 fill-current'
-                          : 'text-gray-700'
-                      }`}
-                    />
-                  </motion.button>
-                ))}
-                {(hoverRating || userRating) > 0 && (
-                  <span className="text-yellow-400 font-bold text-lg ml-2">
-                    {hoverRating || userRating}/10
-                  </span>
-                )}
-              </div>
-              {userRating > 0 && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-sm text-accent-400"
-                >
-                  Thanks for rating! Your score: {userRating}/10
-                </motion.p>
-              )}
+                    <div className="w-[100px] md:w-[120px] h-[100px] md:h-[120px] rounded-2xl overflow-hidden mb-2.5 mx-auto ring-1 ring-white/10">
+                      <img
+                        src={member.photo}
+                        alt={member.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${member.name}&background=7C3AED&color=fff&size=120`;
+                        }}
+                      />
+                    </div>
+                    <p className="text-sm font-medium text-white line-clamp-1 hover:text-accent-400 transition-colors">{member.name}</p>
+                    <p className="text-xs text-accent-400 mt-0.5 line-clamp-1">{member.role}</p>
+                  </motion.div>
+                </Link>
+              ))}
             </div>
           </motion.section>
 

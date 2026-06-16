@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Play, Heart, Bookmark, Share2,
   Volume2, VolumeX, Star, Clock, X,
-  TrendingUp, Eye, Users, ChevronDown, ChevronUp, Info
+  TrendingUp, Eye, Users, ChevronDown, ChevronUp, Info,
+  MessageCircle, ThumbsUp, Send
 } from 'lucide-react';
 import { clips, movies } from '../data/mockData';
 import { Movie, Series } from '../types';
@@ -33,6 +34,9 @@ export default function ExplorePage() {
   const [isLiked, setIsLiked] = useState<Record<string, boolean>>({});
   const [isSaved, setIsSaved] = useState<Record<string, boolean>>({});
   const [showInfoSheet, setShowInfoSheet] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [commentLikes, setCommentLikes] = useState<Record<number, boolean>>({});
   const [isNavigating, setIsNavigating] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const lastScrollTime = useRef(0);
@@ -85,7 +89,7 @@ export default function ExplorePage() {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') navigate('down');
     else if (e.key === 'ArrowUp') navigate('up');
-    else if (e.key === 'Escape') setShowInfoSheet(false);
+    else if (e.key === 'Escape') { setShowInfoSheet(false); setShowComments(false); }
   };
 
   const currentClip = allClips[currentIndex];
@@ -102,13 +106,22 @@ export default function ExplorePage() {
     return num.toString();
   };
 
+  const mockComments = [
+    { id: 1, name: 'Reza M.', avatar: 'RM', text: 'This clip is absolutely incredible. The cinematography is on another level!', likes: 142, time: '2h ago' },
+    { id: 2, name: 'Sara K.', avatar: 'SK', text: 'I watched the full movie after seeing this. Totally worth it.', likes: 89, time: '4h ago' },
+    { id: 3, name: 'Ali H.', avatar: 'AH', text: 'Best Iranian film of the decade. Pure masterpiece.', likes: 67, time: '1d ago' },
+    { id: 4, name: 'Mina R.', avatar: 'MR', text: 'The acting in this scene gave me chills. Incredible work.', likes: 34, time: '2d ago' },
+  ];
+
   return (
     <div
       ref={containerRef}
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      className="fixed inset-0 top-16 md:top-20 bg-black focus:outline-none overflow-hidden"
+      className="fixed inset-0 top-16 md:top-20 bg-black focus:outline-none overflow-hidden flex items-center justify-center"
     >
+      {/* Desktop: constrain to max 700px centered */}
+      <div className="relative w-full md:max-w-[700px] h-full">
       {/* Full-screen clip feed */}
       <AnimatePresence mode="wait">
         {currentClip && (
@@ -296,6 +309,13 @@ export default function ExplorePage() {
                     activeBg="bg-red-500/20"
                     onClick={() => setIsLiked(prev => ({ ...prev, [currentClip.id]: !prev[currentClip.id] }))}
                     fillOnActive
+                  />
+                  <ActionButton
+                    icon={MessageCircle}
+                    label="Comments"
+                    onClick={() => { setShowComments(true); setShowInfoSheet(false); }}
+                    activeColor="text-accent-400"
+                    activeBg="bg-accent-500/20"
                   />
                   <ActionButton
                     icon={Share2}
@@ -494,6 +514,96 @@ export default function ExplorePage() {
           </>
         )}
       </AnimatePresence>
+
+      {/* COMMENTS DRAWER */}
+      <AnimatePresence>
+        {showComments && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowComments(false)}
+              className="absolute inset-0 z-40 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 400, damping: 40 }}
+              className="absolute bottom-0 left-0 right-0 z-50 bg-dark-900 border-t border-dark-700 rounded-t-3xl"
+              style={{ maxHeight: '75vh' }}
+            >
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 rounded-full bg-dark-600" />
+              </div>
+
+              <div className="flex items-center justify-between px-5 py-3 border-b border-dark-800">
+                <h3 className="text-white font-semibold">Comments</h3>
+                <button
+                  onClick={() => setShowComments(false)}
+                  className="p-1.5 rounded-full hover:bg-dark-800 text-gray-400 hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="overflow-y-auto" style={{ maxHeight: 'calc(75vh - 130px)' }}>
+                <div className="p-4 space-y-4">
+                  {mockComments.map(comment => (
+                    <div key={comment.id} className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-accent-600/50 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                        {comment.avatar}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-semibold text-white">{comment.name}</span>
+                          <span className="text-xs text-gray-600">{comment.time}</span>
+                        </div>
+                        <p className="text-gray-300 text-sm">{comment.text}</p>
+                        <button
+                          onClick={() => setCommentLikes(prev => ({ ...prev, [comment.id]: !prev[comment.id] }))}
+                          className={`flex items-center gap-1.5 mt-2 text-xs transition-colors ${
+                            commentLikes[comment.id] ? 'text-accent-400' : 'text-gray-500 hover:text-white'
+                          }`}
+                        >
+                          <ThumbsUp className={`w-3.5 h-3.5 ${commentLikes[comment.id] ? 'fill-current' : ''}`} />
+                          {comment.likes + (commentLikes[comment.id] ? 1 : 0)}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Comment input */}
+              <div className="px-4 pb-4 pt-3 border-t border-dark-800">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-accent-600/50 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                    Me
+                  </div>
+                  <div className="flex-1 relative">
+                    <input
+                      type="text"
+                      value={commentText}
+                      onChange={e => setCommentText(e.target.value)}
+                      placeholder="Add a comment..."
+                      className="w-full bg-dark-800 border border-dark-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-all pr-10"
+                    />
+                    <button
+                      onClick={() => setCommentText('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-accent-400 hover:text-accent-300 transition-colors"
+                    >
+                      <Send className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+      </div>
     </div>
   );
 }

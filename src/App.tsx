@@ -8,6 +8,11 @@ import ExplorePage from './pages/ExplorePage';
 import ProfilePage from './pages/ProfilePage';
 import WatchlistPage from './pages/WatchlistPage';
 import AdminDashboard from './pages/AdminDashboard';
+import AuthPage from './pages/AuthPage';
+import OnboardingPage from './pages/OnboardingPage';
+import ActorProfilePage from './pages/ActorProfilePage';
+import SubscriptionPage from './pages/SubscriptionPage';
+import SettingsPage from './pages/SettingsPage';
 
 function App() {
   return (
@@ -22,6 +27,11 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/watchlist" element={<WatchlistPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/onboarding" element={<OnboardingPage />} />
+          <Route path="/actor/:id" element={<ActorProfilePage />} />
+          <Route path="/subscription" element={<SubscriptionPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </Layout>
     </Router>

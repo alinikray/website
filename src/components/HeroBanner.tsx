@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Info, Plus, ChevronLeft, ChevronRight, Star } from 'lucide-react';
+import { Play, Info, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Movie, Series } from '../types';
 
@@ -131,36 +131,30 @@ export default function HeroBanner({ content }: HeroBannerProps) {
                 Watch Now
               </motion.button>
             </Link>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-2 btn-secondary px-8 py-3.5 text-lg"
-            >
-              <Plus className="w-6 h-6" />
-              My List
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-2 btn-secondary"
-            >
-              <Info className="w-5 h-5" />
-              More Info
-            </motion.button>
+            <Link to={`/movie/${currentContent.id}`}>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-2 btn-secondary"
+              >
+                <Info className="w-5 h-5" />
+                More Info
+              </motion.button>
+            </Link>
           </div>
         </motion.div>
       </div>
 
-      {/* Navigation Dots */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2">
+      {/* Navigation Dots — right aligned, vertical */}
+      <div className="absolute right-5 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`h-1.5 rounded-full transition-all duration-300 ${
+            className={`rounded-full transition-all duration-300 ${
               index === currentSlide
-                ? 'w-8 bg-accent-500'
-                : 'w-1.5 bg-gray-500 hover:bg-gray-300'
+                ? 'h-8 w-1.5 bg-accent-500'
+                : 'h-1.5 w-1.5 bg-gray-500 hover:bg-gray-300'
             }`}
           />
         ))}
@@ -175,25 +169,27 @@ export default function HeroBanner({ content }: HeroBannerProps) {
       </button>
       <button
         onClick={() => setCurrentSlide((prev) => (prev + 1) % slides.length)}
-        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full glass opacity-0 hover:opacity-100 transition-opacity group"
+        className="absolute right-12 top-1/2 -translate-y-1/2 p-3 rounded-full glass opacity-0 hover:opacity-100 transition-opacity group"
       >
         <ChevronRight className="w-6 h-6 text-white group-hover:text-accent-400 transition-colors" />
       </button>
 
-      {/* Scroll Indicator */}
-      <motion.div
-        animate={{ y: [0, 10, 0] }}
-        transition={{ repeat: Infinity, duration: 2 }}
-        className="absolute bottom-4 left-1/2 -translate-x-1/2"
-      >
-        <div className="w-6 h-10 rounded-full border-2 border-gray-500 flex items-start justify-center p-1.5">
-          <motion.div
-            animate={{ y: [0, 12] }}
-            transition={{ repeat: Infinity, duration: 1.5, repeatType: 'reverse' }}
-            className="w-1.5 h-1.5 rounded-full bg-accent-500"
-          />
-        </div>
-      </motion.div>
+      {/* Scroll Indicator — at bottom center, clearly separated */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
+        <motion.div
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ repeat: Infinity, duration: 2 }}
+          className="flex flex-col items-center gap-1.5"
+        >
+          <div className="w-6 h-9 rounded-full border-2 border-gray-500/60 flex items-start justify-center p-1">
+            <motion.div
+              animate={{ y: [0, 10, 0] }}
+              transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
+              className="w-1 h-1 rounded-full bg-accent-400"
+            />
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }
