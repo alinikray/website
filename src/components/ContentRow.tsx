@@ -1,6 +1,6 @@
 import { forwardRef, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Star, Clock, Play, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Star, Play, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Movie, Series } from '../types';
 
@@ -108,9 +108,8 @@ interface ContentCardProps {
 }
 
 function ContentCard({ item, index, showBadge }: ContentCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const isMovie = 'duration' in item;
-
   const linkPath = isMovie ? `/movie/${item.id}` : `/series/${item.id}`;
 
   return (
@@ -118,82 +117,72 @@ function ContentCard({ item, index, showBadge }: ContentCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.4 }}
-      className="flex-shrink-0 w-[280px] relative"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className="flex-shrink-0 w-[160px] md:w-[190px] group/card"
     >
       <Link to={linkPath}>
-        <motion.div
-          animate={{ scale: isHovered ? 1.05 : 1 }}
-          className="relative aspect-[2/3] rounded-xl md:rounded-2xl overflow-hidden cursor-pointer group/card"
-        >
-          {/* Poster Image */}
+        <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-dark-800">
           <img
             src={item.poster}
             alt={item.title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-110"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-dark-900 via-transparent to-transparent opacity-60" />
+          {/* Hover overlay with actions */}
+          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-3 opacity-0 group-hover/card:opacity-100 transition-opacity">
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              <div className="w-12 h-12 rounded-full bg-accent-600 flex items-center justify-center shadow-glow">
+                <Play className="w-5 h-5 text-white fill-current ml-0.5" />
+              </div>
+            </motion.div>
+          </div>
 
-          {/* Hover Overlay */}
-          <motion.div
-            animate={{ opacity: isHovered ? 1 : 0 }}
-            className="absolute inset-0 bg-gradient-to-t from-dark-900/90 via-dark-900/50 to-transparent flex flex-col justify-end p-4"
-          >
-            {/* Quick Actions */}
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="w-12 h-12 rounded-full bg-accent-600 hover:bg-accent-500 flex items-center justify-center shadow-lg shadow-accent-500/30"
-              >
-                <Play className="w-5 h-5 text-white fill-current" />
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="w-10 h-10 rounded-full bg-dark-700/80 hover:bg-dark-600 flex items-center justify-center"
-              >
-                <Plus className="w-5 h-5 text-white" />
-              </motion.button>
-            </div>
-          </motion.div>
-
-          {/* Badge */}
+          {/* NEW badge */}
           {showBadge && (item as Movie).isNewRelease && (
-            <div className="absolute top-3 right-3 px-2 py-1 rounded-md bg-accent-600 text-white text-xs font-semibold">
+            <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-accent-600 text-white text-xs font-bold">
               NEW
             </div>
           )}
 
           {/* Rating */}
-          <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 rounded-lg glass text-yellow-400">
-            <Star className="w-3.5 h-3.5 fill-current" />
-            <span className="text-xs font-bold">{item.rating}</span>
+          <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-sm text-yellow-400 text-xs font-bold">
+            <Star className="w-3 h-3 fill-current" />
+            {item.rating}
           </div>
-        </motion.div>
+
+          {/* Save button */}
+          <motion.button
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.85 }}
+            onClick={(e) => {
+              e.preventDefault();
+              setIsSaved(s => !s);
+            }}
+            className={`absolute bottom-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-all opacity-0 group-hover/card:opacity-100 ${
+              isSaved ? 'bg-accent-600 text-white' : 'bg-black/60 backdrop-blur-sm text-gray-300'
+            }`}
+          >
+            <Plus className={`w-4 h-4 transition-transform ${isSaved ? 'rotate-45' : ''}`} />
+          </motion.button>
+        </div>
       </Link>
 
-      {/* Info Below Card */}
-      <div className="mt-3 px-1">
-        <h3 className="text-sm font-semibold text-white line-clamp-1">{item.title}</h3>
-        <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+      <div className="mt-2.5 px-0.5">
+        <h3 className="text-sm font-semibold text-white line-clamp-1 group-hover/card:text-accent-400 transition-colors">
+          {item.title}
+        </h3>
+        <div className="flex items-center gap-1.5 mt-0.5 text-xs text-gray-500">
           <span>{item.year}</span>
           {isMovie && 'duration' in item && (
             <>
               <span>·</span>
-              <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {Math.floor((item as Movie).duration / 60)}h {(item as Movie).duration % 60}m
-              </span>
+              <span>{Math.floor((item as Movie).duration / 60)}h{(item as Movie).duration % 60}m</span>
             </>
           )}
           {!isMovie && 'seasons' in item && (
             <>
               <span>·</span>
-              <span>{(item as Series).seasons.length} Seasons</span>
+              <span>{(item as Series).seasons.length}S</span>
             </>
           )}
         </div>

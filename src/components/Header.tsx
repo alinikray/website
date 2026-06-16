@@ -35,11 +35,11 @@ export default function Header() {
   };
 
   const navItems = [
-    { path: '/', label: 'Home', icon: Home },
-    { path: '/?section=movies', label: 'Movies', icon: Film, isSection: true },
-    { path: '/?section=series', label: 'Series', icon: Tv, isSection: true },
-    { path: '/explore', label: 'Explore', icon: Compass },
-    { path: '/watchlist', label: 'Watchlist', icon: Bookmark },
+    { path: '/', label: 'Home', icon: Home, highlight: false },
+    { path: '/search?type=movies', label: 'Movies', icon: Film, highlight: false },
+    { path: '/search?type=series', label: 'Series', icon: Tv, highlight: false },
+    { path: '/explore', label: 'Explore', icon: Compass, highlight: true },
+    { path: '/watchlist', label: 'Watchlist', icon: Bookmark, highlight: false },
   ];
 
   return (
@@ -75,14 +75,21 @@ export default function Header() {
                   <Link
                     key={item.label}
                     to={item.path}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      location.pathname === item.path
-                        ? 'text-white bg-dark-800/50'
-                        : 'text-gray-400 hover:text-white hover:bg-dark-800/30'
+                    className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      item.highlight
+                        ? location.pathname === '/explore'
+                          ? 'text-white bg-accent-600'
+                          : 'text-accent-400 hover:text-white hover:bg-accent-600/30'
+                        : location.pathname === item.path
+                          ? 'text-white bg-dark-800/50'
+                          : 'text-gray-400 hover:text-white hover:bg-dark-800/30'
                     }`}
                   >
                     <item.icon className="w-4 h-4" />
                     {item.label}
+                    {item.highlight && location.pathname !== '/explore' && (
+                      <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-accent-400 animate-pulse" />
+                    )}
                   </Link>
                 ))}
               </nav>
@@ -219,13 +226,18 @@ export default function Header() {
                   key={item.label}
                   to={item.path}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                    location.pathname === item.path
-                      ? 'text-white bg-accent-600/20'
-                      : 'text-gray-400 hover:text-white hover:bg-dark-800'
+                    item.highlight && location.pathname !== '/explore'
+                      ? 'text-accent-400 hover:bg-accent-600/20'
+                      : location.pathname === item.path
+                        ? 'text-white bg-accent-600/20'
+                        : 'text-gray-400 hover:text-white hover:bg-dark-800'
                   }`}
                 >
                   <item.icon className="w-5 h-5" />
                   <span className="font-medium">{item.label}</span>
+                  {item.highlight && location.pathname !== '/explore' && (
+                    <span className="ml-auto px-2 py-0.5 rounded-full bg-accent-600/30 text-accent-400 text-xs">New</span>
+                  )}
                 </Link>
               ))}
             </nav>
