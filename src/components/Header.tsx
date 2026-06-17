@@ -1,347 +1,475 @@
-import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Bell, User, Menu, X, Settings, LogOut, Circle as HelpCircle, Film, Tv, TrendingUp, Clock, Flame } from 'lucide-react';
+import {
+  Search, Menu, X, User, Film, Tv, Home, Compass,
+  Bookmark, ChevronDown, Crown, Settings, LogIn,
+  Bell, Clock, TrendingUp, Star
+} from 'lucide-react';
 
-const navLinks = [
-  { to: '/', label: 'Home' },
-  { to: '/movies', label: 'Movies' },
-  { to: '/series', label: 'Series' },
+const trendingSearches = ['The Golden Cage', 'Night Watch', 'Shahrazad', 'Asghar Farhadi', 'Desert Wind'];
+const recentSearches = ['The Capital', 'Leila Hatami', 'Iranian Drama'];
+const searchCategories = ['Movies', 'Series', 'Actors'];
+
+const mockNotifications = [
+  { id: 1, text: 'Night Watch is now available in 4K', time: '2h ago', unread: true },
+  { id: 2, text: 'New episode of The Capital added', time: '1d ago', unread: true },
+  { id: 3, text: 'Your watchlist item "Desert Wind" is trending', time: '2d ago', unread: false },
 ];
 
-const trendingSearches = ['Oppenheimer', 'Dune: Part Two', 'The Batman 2', 'Avatar 3'];
-const recentSearches = ['Inception', 'Breaking Bad', 'Stranger Things'];
-
 export default function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<'all' | 'movies' | 'series'>('all');
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [searchCategory, setSearchCategory] = useState('Movies');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState(mockNotifications);
+  const notifRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
   const navigate = useNavigate();
-
-  const notifications = [
-    { id: 1, title: 'New Episode Available', message: 'Stranger Things S5E3 is now streaming', time: '2 min ago', unread: true },
-    { id: 2, title: 'Movie Added to Watchlist', message: 'Dune: Part Two was added successfully', time: '1 hour ago', unread: true },
-    { id: 3, title: 'Weekly Recommendations', message: "Check out this week's top picks", time: '3 hours ago', unread: false },
-  ];
 
   const unreadCount = notifications.filter(n => n.unread).length;
 
   useEffect(() => {
-    if (isSearchOpen && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, [isSearchOpen]);
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setIsSearchOpen(false);
+  }, [location]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setIsSearchOpen(false); setShowNotifications(false); }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setIsSearchOpen(true); }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery)}&category=${activeCategory}`);
-      setIsSearchOpen(false);
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}&type=${searchCategory.toLowerCase()}`);
       setSearchQuery('');
+      setIsSearchOpen(false);
     }
   };
 
+  const handleTrendingClick = (term: string) => {
+    navigate(`/search?q=${encodeURIComponent(term)}`);
+    setIsSearchOpen(false);
+  };
+
+  const markAllRead = () => setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+
+  const isActive = (path: string) => {
+    if (path === '/') return location.pathname === '/';
+    if (path.startsWith('/search')) return location.pathname === '/search';
+    return location.pathname.startsWith(path);
+  };
+
+  const navItems = [
+    { path: '/', label: 'Home', icon: Home },
+    { path: '/search?type=movies', label: 'Movies', icon: Film },
+    { path: '/search?type=series', label: 'Series', icon: Tv },
+    { path: '/explore', label: 'Explore', icon: Compass, highlight: true },
+  ];
+
   return (
     <>
-      <header className="sticky top-0 z-50 bg-surface-950/80 backdrop-blur-xl border-b border-surface-800/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-8">
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          isScrolled
+            ? 'bg-dark-900/95 backdrop-blur-xl shadow-lg shadow-black/20'
+            : 'bg-gradient-to-b from-dark-900/80 to-transparent'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16 md:h-20">
+            <div className="flex items-center gap-4 md:gap-8">
+              {/* Logo */}
               <Link to="/" className="flex items-center gap-2 group">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-500 to-accent-700 flex items-center justify-center shadow-lg shadow-accent-500/20">
-                  <Film className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-white to-surface-300 bg-clip-text text-transparent">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-500 to-accent-700 flex items-center justify-center shadow-lg shadow-accent-500/30"
+                >
+                  <span className="text-white font-display text-lg">F</span>
+                </motion.div>
+                <span className="hidden sm:block text-xl font-bold text-white group-hover:text-accent-400 transition-colors">
                   Fynex Movies
                 </span>
               </Link>
 
+              {/* Desktop Navigation */}
               <nav className="hidden md:flex items-center gap-1">
-                {navLinks.map(link => (
-                  <Link
-                    key={link.to}
-                    to={link.to}
-                    className="px-4 py-2 rounded-lg text-surface-400 hover:text-white hover:bg-surface-800/50 transition-all"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
+                {navItems.map((item) => {
+                  const active = isActive(item.path);
+                  const isExplore = item.highlight;
+                  return (
+                    <Link
+                      key={item.label}
+                      to={item.path}
+                      className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                        active
+                          ? isExplore
+                            ? 'text-white bg-accent-600'
+                            : 'text-white bg-dark-800/70'
+                          : isExplore
+                            ? 'text-accent-400 hover:text-white hover:bg-accent-600/30'
+                            : 'text-gray-400 hover:text-white hover:bg-dark-800/30'
+                      }`}
+                    >
+                      <item.icon className="w-4 h-4" />
+                      {item.label}
+                      {isExplore && !active && (
+                        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-accent-400 animate-pulse" />
+                      )}
+                    </Link>
+                  );
+                })}
               </nav>
             </div>
 
+            {/* Right Section */}
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsSearchOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-800/50 hover:bg-surface-800 border border-surface-700/50 transition-all"
+              {/* Subscription Badge */}
+              <Link
+                to="/subscription"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-400 text-xs font-semibold hover:from-amber-500/30 hover:to-orange-500/30 transition-all"
               >
-                <Search className="w-4 h-4 text-surface-400" />
-                <span className="text-surface-400 text-sm hidden sm:inline">Search...</span>
-                <kbd className="hidden lg:inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded bg-surface-700/50 text-surface-500">
-                  <span>⌘</span>K
-                </kbd>
-              </button>
+                <Crown className="w-3.5 h-3.5" />
+                Premium
+              </Link>
 
-              <div className="relative">
-                <button
-                  onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-                  className="relative p-2 rounded-lg hover:bg-surface-800/50 transition-colors"
+              {/* Search Button */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsSearchOpen(true)}
+                className="p-2.5 rounded-lg bg-dark-800/50 hover:bg-dark-700/50 text-gray-400 hover:text-white transition-all"
+              >
+                <Search className="w-5 h-5" />
+              </motion.button>
+
+              {/* Notification Bell */}
+              <div ref={notifRef} className="relative">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowNotifications(v => !v)}
+                  className="relative p-2.5 rounded-lg bg-dark-800/50 hover:bg-dark-700/50 text-gray-400 hover:text-white transition-all"
                 >
-                  <Bell className="w-5 h-5 text-surface-400" />
+                  <Bell className="w-5 h-5" />
                   {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-accent-500 text-[10px] font-medium flex items-center justify-center text-white">
+                    <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-accent-600 text-white text-[10px] font-bold flex items-center justify-center leading-none">
                       {unreadCount}
                     </span>
                   )}
-                </button>
+                </motion.button>
 
                 <AnimatePresence>
-                  {isNotificationOpen && (
+                  {showNotifications && (
                     <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      initial={{ opacity: 0, y: -8, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-2 w-80 bg-surface-900 border border-surface-800 rounded-xl shadow-2xl overflow-hidden"
+                      exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 top-full mt-2 w-80 glass rounded-2xl shadow-xl overflow-hidden"
                     >
-                      <div className="p-3 border-b border-surface-800 flex items-center justify-between">
-                        <h3 className="font-semibold">Notifications</h3>
-                        <button className="text-xs text-accent-400 hover:text-accent-300">Mark all read</button>
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-dark-700">
+                        <span className="text-sm font-semibold text-white">Notifications</span>
+                        {unreadCount > 0 && (
+                          <button onClick={markAllRead} className="text-xs text-accent-400 hover:text-accent-300 transition-colors">
+                            Mark all read
+                          </button>
+                        )}
                       </div>
-                      <div className="max-h-80 overflow-y-auto">
-                        {notifications.map(notif => (
-                          <div
-                            key={notif.id}
-                            className={`p-3 hover:bg-surface-800/50 cursor-pointer border-l-2 ${
-                              notif.unread ? 'border-accent-500 bg-surface-800/30' : 'border-transparent'
-                            }`}
-                          >
-                            <p className="font-medium text-sm">{notif.title}</p>
-                            <p className="text-xs text-surface-400 mt-0.5">{notif.message}</p>
-                            <p className="text-xs text-surface-500 mt-1">{notif.time}</p>
+                      <div className="divide-y divide-dark-800">
+                        {notifications.map(n => (
+                          <div key={n.id} className={`px-4 py-3 flex items-start gap-3 ${n.unread ? 'bg-accent-600/5' : ''}`}>
+                            <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${n.unread ? 'bg-accent-500' : 'bg-dark-600'}`} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-gray-300 leading-snug">{n.text}</p>
+                              <p className="text-xs text-gray-600 mt-0.5">{n.time}</p>
+                            </div>
                           </div>
                         ))}
                       </div>
-                      <div className="p-2 border-t border-surface-800">
-                        <button className="w-full text-center text-sm text-accent-400 hover:text-accent-300 py-1">
-                          View all notifications
-                        </button>
-                      </div>
+                      {notifications.length === 0 && (
+                        <div className="py-8 text-center text-gray-500 text-sm">No notifications</div>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
 
-              <div className="relative">
-                <button
-                  onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-surface-800/50 transition-colors"
+              {/* Profile Dropdown */}
+              <div className="relative group">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  className="flex items-center gap-2 p-1.5 pr-3 rounded-lg bg-dark-800/50 hover:bg-dark-700/50 transition-all"
                 >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent-400 to-accent-600 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-500 to-accent-700 flex items-center justify-center">
                     <User className="w-4 h-4 text-white" />
                   </div>
-                </button>
+                  <ChevronDown className="w-4 h-4 text-gray-400 hidden sm:block" />
+                </motion.button>
 
-                <AnimatePresence>
-                  {isProfileOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-2 w-56 bg-surface-900 border border-surface-800 rounded-xl shadow-2xl overflow-hidden"
-                    >
-                      <div className="p-3 border-b border-surface-800">
-                        <p className="font-medium">John Doe</p>
-                        <p className="text-xs text-surface-400">john@example.com</p>
-                      </div>
-                      <div className="py-1">
-                        <Link
-                          to="/profile"
-                          className="flex items-center gap-3 px-3 py-2 hover:bg-surface-800/50 text-surface-300"
-                          onClick={() => setIsProfileOpen(false)}
-                        >
-                          <User className="w-4 h-4" />
-                          <span>Profile</span>
-                        </Link>
-                        <Link
-                          to="/settings"
-                          className="flex items-center gap-3 px-3 py-2 hover:bg-surface-800/50 text-surface-300"
-                          onClick={() => setIsProfileOpen(false)}
-                        >
-                          <Settings className="w-4 h-4" />
-                          <span>Settings</span>
-                        </Link>
-                        <Link
-                          to="/support"
-                          className="flex items-center gap-3 px-3 py-2 hover:bg-surface-800/50 text-surface-300"
-                          onClick={() => setIsProfileOpen(false)}
-                        >
-                          <HelpCircle className="w-4 h-4" />
-                          <span>Support</span>
-                        </Link>
-                      </div>
-                      <div className="border-t border-surface-800 py-1">
-                        <button className="flex items-center gap-3 px-3 py-2 w-full hover:bg-surface-800/50 text-red-400">
-                          <LogOut className="w-4 h-4" />
-                          <span>Sign Out</span>
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {/* Dropdown Menu */}
+                <div className="absolute right-0 top-full mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right scale-95 group-hover:scale-100">
+                  <div className="glass rounded-xl py-2 min-w-[200px] shadow-xl">
+                    <Link to="/profile" className="flex items-center gap-3 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-dark-700/50 transition-colors">
+                      <User className="w-4 h-4" />
+                      <span className="text-sm">Profile</span>
+                    </Link>
+                    <Link to="/watchlist" className="flex items-center gap-3 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-dark-700/50 transition-colors">
+                      <Bookmark className="w-4 h-4" />
+                      <span className="text-sm">Watchlist</span>
+                    </Link>
+                    <Link to="/support" className="flex items-center gap-3 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-dark-700/50 transition-colors">
+                      <Star className="w-4 h-4" />
+                      <span className="text-sm">Support</span>
+                    </Link>
+                    <Link to="/settings" className="flex items-center gap-3 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-dark-700/50 transition-colors">
+                      <Settings className="w-4 h-4" />
+                      <span className="text-sm">Settings</span>
+                    </Link>
+                    <Link to="/subscription" className="flex items-center gap-3 px-4 py-2.5 text-amber-400 hover:text-amber-300 hover:bg-dark-700/50 transition-colors">
+                      <Crown className="w-4 h-4" />
+                      <span className="text-sm">Upgrade to Premium</span>
+                    </Link>
+                    <div className="h-px bg-dark-700 my-2" />
+                    <Link to="/admin" className="flex items-center gap-3 px-4 py-2.5 text-accent-400 hover:text-accent-300 hover:bg-dark-700/50 transition-colors">
+                      <Film className="w-4 h-4" />
+                      <span className="text-sm">Admin Panel</span>
+                    </Link>
+                    <div className="h-px bg-dark-700 my-2" />
+                    <Link to="/auth" className="flex items-center gap-3 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-dark-700/50 transition-colors">
+                      <LogIn className="w-4 h-4" />
+                      <span className="text-sm">Sign In / Register</span>
+                    </Link>
+                  </div>
+                </div>
               </div>
 
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="md:hidden p-2 rounded-lg hover:bg-surface-800/50"
+              {/* Mobile Menu Button */}
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="md:hidden p-2.5 rounded-lg bg-dark-800/50 text-gray-400 hover:text-white transition-all"
               >
-                {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </motion.button>
             </div>
           </div>
-
-          <AnimatePresence>
-            {isMenuOpen && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="md:hidden overflow-hidden"
-              >
-                <nav className="py-4 space-y-1">
-                  {navLinks.map(link => (
-                    <Link
-                      key={link.to}
-                      to={link.to}
-                      className="block px-4 py-2 rounded-lg text-surface-300 hover:bg-surface-800/50"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </nav>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
-      </header>
+      </motion.header>
 
+      {/* Premium Search Overlay */}
       <AnimatePresence>
         {isSearchOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-surface-950/95 backdrop-blur-xl"
-            onClick={() => setIsSearchOpen(false)}
+            className="fixed inset-0 z-[100] bg-dark-900/98 backdrop-blur-xl"
           >
-            <div className="max-w-3xl mx-auto pt-20 px-4" onClick={e => e.stopPropagation()}>
-              <form onSubmit={handleSearch} className="relative">
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-500" />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Search movies, series, actors..."
-                    className="w-full pl-12 pr-12 py-4 bg-surface-800/50 border border-surface-700 rounded-2xl text-lg focus:outline-none focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setIsSearchOpen(false)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-surface-700"
-                  >
-                    <X className="w-5 h-5 text-surface-400" />
-                  </button>
-                </div>
+            <div className="max-w-3xl mx-auto px-4 pt-16 md:pt-24">
+              {/* Close button */}
+              <button
+                onClick={() => setIsSearchOpen(false)}
+                className="absolute top-4 right-4 md:top-6 md:right-6 p-2 rounded-lg hover:bg-dark-800 text-gray-400 hover:text-white transition-all"
+              >
+                <X className="w-6 h-6" />
+              </button>
 
-                <div className="flex gap-2 mt-4 px-1">
-                  {(['all', 'movies', 'series'] as const).map(cat => (
+              <motion.div
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -20, opacity: 0 }}
+                transition={{ delay: 0.05 }}
+              >
+                {/* Category tabs */}
+                <div className="flex items-center gap-2 mb-4">
+                  {searchCategories.map(cat => (
                     <button
                       key={cat}
-                      type="button"
-                      onClick={() => setActiveCategory(cat)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        activeCategory === cat
-                          ? 'bg-accent-500 text-white'
-                          : 'bg-surface-800/50 text-surface-400 hover:bg-surface-800'
+                      onClick={() => setSearchCategory(cat)}
+                      className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                        searchCategory === cat
+                          ? 'bg-accent-600 text-white'
+                          : 'glass text-gray-400 hover:text-white'
                       }`}
                     >
-                      {cat === 'all' && 'All'}
-                      {cat === 'movies' && (
-                        <span className="flex items-center gap-1.5">
-                          <Film className="w-4 h-4" /> Movies
-                        </span>
-                      )}
-                      {cat === 'series' && (
-                        <span className="flex items-center gap-1.5">
-                          <Tv className="w-4 h-4" /> Series
-                        </span>
-                      )}
+                      {cat}
                     </button>
                   ))}
                 </div>
-              </form>
 
-              {searchQuery.length === 0 && (
-                <div className="mt-8 space-y-6">
-                  <div>
-                    <div className="flex items-center gap-2 text-surface-500 mb-3">
-                      <Flame className="w-4 h-4" />
-                      <span className="text-sm font-medium">Trending</span>
+                {/* Search input */}
+                <form onSubmit={handleSearch} className="relative mb-6">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-500" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder={`Search ${searchCategory.toLowerCase()}...`}
+                    autoFocus
+                    className="w-full bg-dark-800 border border-dark-700 rounded-2xl py-4 pl-14 pr-14 text-lg text-white placeholder-gray-500 focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 transition-all"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  )}
+                </form>
+
+                {/* Instant suggestions when typing */}
+                {searchQuery.length > 1 && (
+                  <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-xl mb-6 overflow-hidden">
+                    {['The Last Stand', 'The Capital', 'The Golden Cage'].filter(t => t.toLowerCase().includes(searchQuery.toLowerCase())).map(suggestion => (
+                      <button
+                        key={suggestion}
+                        onClick={() => handleTrendingClick(suggestion)}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-dark-700/50 transition-colors text-sm text-left"
+                      >
+                        <Search className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                        {suggestion}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+
+                {!searchQuery && (
+                  <div className="space-y-6">
+                    {/* Trending */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <TrendingUp className="w-4 h-4 text-accent-400" />
+                        <span className="text-sm font-semibold text-white">Trending Searches</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {trendingSearches.map(term => (
+                          <button
+                            key={term}
+                            onClick={() => handleTrendingClick(term)}
+                            className="px-4 py-2 rounded-full glass text-sm text-gray-300 hover:text-white hover:border-accent-500/30 transition-all"
+                          >
+                            {term}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {trendingSearches.map(term => (
-                        <button
-                          key={term}
-                          onClick={() => {
-                            setSearchQuery(term);
-                            navigate(`/search?q=${encodeURIComponent(term)}&category=${activeCategory}`);
-                            setIsSearchOpen(false);
-                          }}
-                          className="px-3 py-1.5 bg-surface-800/50 hover:bg-surface-800 rounded-lg text-sm text-surface-300 transition-colors"
-                        >
-                          {term}
-                        </button>
-                      ))}
+
+                    {/* Recent */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Clock className="w-4 h-4 text-gray-500" />
+                        <span className="text-sm font-semibold text-white">Recent Searches</span>
+                      </div>
+                      <div className="space-y-1">
+                        {recentSearches.map(term => (
+                          <button
+                            key={term}
+                            onClick={() => handleTrendingClick(term)}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-dark-800 transition-all text-sm text-left"
+                          >
+                            <Clock className="w-4 h-4 flex-shrink-0" />
+                            {term}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
+                )}
 
-                  <div>
-                    <div className="flex items-center gap-2 text-surface-500 mb-3">
-                      <Clock className="w-4 h-4" />
-                      <span className="text-sm font-medium">Recent Searches</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {recentSearches.map(term => (
-                        <button
-                          key={term}
-                          onClick={() => setSearchQuery(term)}
-                          className="px-3 py-1.5 bg-surface-800/50 hover:bg-surface-800 rounded-lg text-sm text-surface-300 transition-colors"
-                        >
-                          {term}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {searchQuery.length > 0 && (
-                <div className="mt-4 bg-surface-800/30 rounded-xl border border-surface-700/50 overflow-hidden">
-                  <div className="p-3 text-surface-400 text-sm flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4" />
-                    Press Enter to search for "{searchQuery}"
-                  </div>
-                </div>
-              )}
+                <p className="text-center text-gray-600 text-xs mt-6">
+                  Press <kbd className="px-1.5 py-0.5 rounded bg-dark-800 border border-dark-700 text-gray-400 text-xs">Enter</kbd> to search · <kbd className="px-1.5 py-0.5 rounded bg-dark-800 border border-dark-700 text-gray-400 text-xs">Esc</kbd> to close
+                </p>
+              </motion.div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-16 left-0 right-0 z-40 md:hidden bg-dark-900/95 backdrop-blur-xl border-t border-dark-800"
+          >
+            <nav className="py-4 px-4 space-y-1">
+              {navItems.map((item) => {
+                const active = isActive(item.path);
+                const isExplore = item.highlight;
+                return (
+                  <Link
+                    key={item.label}
+                    to={item.path}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                      active
+                        ? 'text-white bg-accent-600/20 border border-accent-500/20'
+                        : isExplore
+                          ? 'text-accent-400 hover:bg-accent-600/20'
+                          : 'text-gray-400 hover:text-white hover:bg-dark-800'
+                    }`}
+                  >
+                    <item.icon className="w-5 h-5" />
+                    <span className="font-medium">{item.label}</span>
+                    {isExplore && !active && (
+                      <span className="ml-auto px-2 py-0.5 rounded-full bg-accent-600/30 text-accent-400 text-xs">New</span>
+                    )}
+                  </Link>
+                );
+              })}
+              <div className="h-px bg-dark-800 my-2" />
+              <Link to="/subscription" className="flex items-center gap-3 px-4 py-3 rounded-xl text-amber-400 hover:bg-amber-500/10 transition-all">
+                <Crown className="w-5 h-5" />
+                <span className="font-medium">Premium Plans</span>
+              </Link>
+              <Link to="/support" className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-dark-800 transition-all">
+                <Bell className="w-5 h-5" />
+                <span className="font-medium">Support</span>
+              </Link>
+              <Link to="/settings" className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-dark-800 transition-all">
+                <Settings className="w-5 h-5" />
+                <span className="font-medium">Settings</span>
+              </Link>
+              <Link to="/auth" className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-dark-800 transition-all">
+                <LogIn className="w-5 h-5" />
+                <span className="font-medium">Sign In / Register</span>
+              </Link>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Spacer for fixed header */}
+      <div className="h-16 md:h-20" />
     </>
   );
 }

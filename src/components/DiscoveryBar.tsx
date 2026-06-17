@@ -1,36 +1,51 @@
-import { Link } from 'react-router-dom';
-import { Flame, Trophy, Clock, Star, Sparkles, Tv, Film, Heart } from 'lucide-react';
+import { useRef } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 const chips = [
-  { label: 'Trending', icon: Flame, href: '/search?sort=trending', color: 'text-orange-400' },
-  { label: 'Top 250', icon: Trophy, href: '/search?sort=top250', color: 'text-yellow-400' },
-  { label: 'New Releases', icon: Sparkles, href: '/search?sort=new', color: 'text-blue-400' },
-  { label: 'Coming Soon', icon: Clock, href: '/search?sort=upcoming', color: 'text-teal-400' },
-  { label: 'Top Rated', icon: Star, href: '/search?sort=rating', color: 'text-amber-400' },
-  { label: 'TV Series', icon: Tv, href: '/series', color: 'text-purple-400' },
-  { label: 'Movies', icon: Film, href: '/movies', color: 'text-pink-400' },
-  { label: 'Fan Favorites', icon: Heart, href: '/search?sort=favorites', color: 'text-red-400' },
+  { label: 'Trending', emoji: '🔥', href: '/search?sort=trending' },
+  { label: 'Top 250', emoji: '🏆', href: '/search?sort=top250' },
+  { label: 'Box Office', emoji: '🎬', href: '/search?sort=boxoffice' },
+  { label: 'Coming Soon', emoji: '🚀', href: '/search?sort=coming' },
+  { label: 'Popular Series', emoji: '📈', href: '/search?type=series&sort=popular' },
+  { label: 'Most Discussed', emoji: '💬', href: '/search?sort=discussed' },
+  { label: 'Editor Picks', emoji: '⭐', href: '/search?sort=editor' },
 ];
 
 export default function DiscoveryBar() {
+  const rowRef = useRef<HTMLDivElement>(null);
+  const [searchParams] = useSearchParams();
+  const activeSort = searchParams.get('sort');
+
   return (
-    <div className="bg-surface-900/50 border-b border-surface-800/50 backdrop-blur-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
-          {chips.map(chip => (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2 }}
+      className="bg-dark-900/90 backdrop-blur-xl border-b border-dark-800/60"
+    >
+      <div
+        ref={rowRef}
+        className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex items-center gap-2 overflow-x-auto scrollbar-hide"
+      >
+        {chips.map((chip) => {
+          const isActive = activeSort === chip.href.split('sort=')[1]?.split('&')[0];
+          return (
             <Link
               key={chip.label}
               to={chip.href}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-800/50 hover:bg-surface-800 border border-surface-700/50 hover:border-surface-600 transition-all whitespace-nowrap group"
+              className={`flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-all flex-shrink-0 ${
+                isActive
+                  ? 'bg-accent-600 text-white shadow-glow'
+                  : 'bg-dark-800/60 text-gray-400 hover:text-white hover:bg-dark-700/60 border border-dark-700/50'
+              }`}
             >
-              <chip.icon className={`w-4 h-4 ${chip.color} group-hover:scale-110 transition-transform`} />
-              <span className="text-sm font-medium text-surface-300 group-hover:text-white transition-colors">
-                {chip.label}
-              </span>
+              <span>{chip.emoji}</span>
+              <span>{chip.label}</span>
             </Link>
-          ))}
-        </div>
+          );
+        })}
       </div>
-    </div>
+    </motion.div>
   );
 }

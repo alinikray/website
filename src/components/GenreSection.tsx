@@ -1,94 +1,69 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
-const genres = [
-  {
-    name: 'Action',
-    slug: 'action',
-    image: 'https://images.pexels.com/photos/2799110/pexels-photo-2799110.jpeg?auto=compress&cs=tinysrgb&w=600',
-  },
-  {
-    name: 'Comedy',
-    slug: 'comedy',
-    image: 'https://images.pexels.com/photos/3014847/pexels-photo-3014847.jpeg?auto=compress&cs=tinysrgb&w=600',
-  },
-  {
-    name: 'Drama',
-    slug: 'drama',
-    image: 'https://images.pexels.com/photos/3915398/pexels-photo-3915398.jpeg?auto=compress&cs=tinysrgb&w=600',
-  },
-  {
-    name: 'Horror',
-    slug: 'horror',
-    image: 'https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=600',
-  },
-  {
-    name: 'Sci-Fi',
-    slug: 'sci-fi',
-    image: 'https://images.pexels.com/photos/384555/pexels-photo-384555.jpeg?auto=compress&cs=tinysrgb&w=600',
-  },
-  {
-    name: 'Romance',
-    slug: 'romance',
-    image: 'https://images.pexels.com/photos/1024960/pexels-photo-1024960.jpeg?auto=compress&cs=tinysrgb&w=600',
-  },
-  {
-    name: 'Thriller',
-    slug: 'thriller',
-    image: 'https://images.pexels.com/photos/1667580/pexels-photo-1667580.jpeg?auto=compress&cs=tinysrgb&w=600',
-  },
-  {
-    name: 'Animation',
-    slug: 'animation',
-    image: 'https://images.pexels.com/photos/33297/totoro-toy-figurines-toy-animation.jpg?auto=compress&cs=tinysrgb&w=600',
-  },
-];
+interface GenreSectionProps {
+  genres: string[];
+}
 
-export default function GenreSection() {
+const genreImages: Record<string, string> = {
+  Action: 'https://images.pexels.com/photos/1552237/pexels-photo-1552237.jpeg?auto=compress&cs=tinysrgb&w=400',
+  Drama: 'https://images.pexels.com/photos/3762800/pexels-photo-3762800.jpeg?auto=compress&cs=tinysrgb&w=400',
+  Comedy: 'https://images.pexels.com/photos/1264210/pexels-photo-1264210.jpeg?auto=compress&cs=tinysrgb&w=400',
+  Thriller: 'https://images.pexels.com/photos/3617458/pexels-photo-3617458.jpeg?auto=compress&cs=tinysrgb&w=400',
+  Horror: 'https://images.pexels.com/photos/3629227/pexels-photo-3629227.jpeg?auto=compress&cs=tinysrgb&w=400',
+  Romance: 'https://images.pexels.com/photos/1024960/pexels-photo-1024960.jpeg?auto=compress&cs=tinysrgb&w=400',
+  'Sci-Fi': 'https://images.pexels.com/photos/1906658/pexels-photo-1906658.jpeg?auto=compress&cs=tinysrgb&w=400',
+  Animation: 'https://images.pexels.com/photos/3593865/pexels-photo-3593865.jpeg?auto=compress&cs=tinysrgb&w=400',
+  Documentary: 'https://images.pexels.com/photos/2608517/pexels-photo-2608517.jpeg?auto=compress&cs=tinysrgb&w=400',
+  Crime: 'https://images.pexels.com/photos/1000740/pexels-photo-1000740.jpeg?auto=compress&cs=tinysrgb&w=400',
+  Adventure: 'https://images.pexels.com/photos/1252500/pexels-photo-1252500.jpeg?auto=compress&cs=tinysrgb&w=400',
+  Fantasy: 'https://images.pexels.com/photos/3617497/pexels-photo-3617497.jpeg?auto=compress&cs=tinysrgb&w=400',
+  Mystery: 'https://images.pexels.com/photos/3807571/pexels-photo-3807571.jpeg?auto=compress&cs=tinysrgb&w=400',
+  Family: 'https://images.pexels.com/photos/1128318/pexels-photo-1128318.jpeg?auto=compress&cs=tinysrgb&w=400',
+  War: 'https://images.pexels.com/photos/3851254/pexels-photo-3851254.jpeg?auto=compress&cs=tinysrgb&w=400',
+  Historical: 'https://images.pexels.com/photos/161963/belvedere-vienna-palace-austria-161963.jpeg?auto=compress&cs=tinysrgb&w=400',
+};
+
+export default function GenreSection({ genres }: GenreSectionProps) {
   return (
-    <section className="py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-white">Browse by Genre</h2>
-          <Link
-            to="/search"
-            className="text-sm text-accent-400 hover:text-accent-300 transition-colors"
-          >
-            View all
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {genres.map((genre, index) => (
-            <motion.div
-              key={genre.slug}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.05 }}
-              viewport={{ once: true }}
-            >
-              <Link
-                to={`/search?genre=${genre.slug}`}
-                className="relative block aspect-video rounded-xl overflow-hidden group"
-              >
-                <img
-                  src={genre.image}
-                  alt={genre.name}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-surface-950 via-surface-950/40 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-r from-accent-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="absolute bottom-4 left-4 right-4">
-                  <h3 className="text-lg font-bold text-white">{genre.name}</h3>
-                  <p className="text-xs text-surface-400 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    Explore titles
-                  </p>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+    <div className="px-4 sm:px-6">
+      <div className="mb-4 md:mb-6">
+        <h2 className="text-xl md:text-2xl font-bold text-white">Browse by Genre</h2>
+        <p className="text-sm text-gray-500 mt-0.5">مرور بر اساس ژانر</p>
       </div>
-    </section>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 md:gap-4">
+        {genres.map((genre, index) => (
+          <motion.div
+            key={genre}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: index * 0.03 }}
+            whileHover={{ scale: 1.04, y: -4 }}
+            whileTap={{ scale: 0.96 }}
+          >
+            <Link to={`/search?genre=${encodeURIComponent(genre)}`} className="block">
+              <div className="relative rounded-xl md:rounded-2xl overflow-hidden aspect-[4/3] cursor-pointer group">
+                {/* Background image */}
+                <img
+                  src={genreImages[genre] || 'https://images.pexels.com/photos/2873486/pexels-photo-2873486.jpeg?auto=compress&cs=tinysrgb&w=400'}
+                  alt={genre}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                {/* Dark overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10 group-hover:from-black/70 transition-all" />
+                {/* Accent glow on hover */}
+                <div className="absolute inset-0 bg-accent-600/0 group-hover:bg-accent-600/15 transition-all" />
+
+                {/* Title */}
+                <div className="absolute inset-0 flex items-end p-3">
+                  <h3 className="text-sm md:text-base font-bold text-white leading-tight text-shadow">{genre}</h3>
+                </div>
+              </div>
+            </Link>
+          </motion.div>
+        ))}
+      </div>
+    </div>
   );
 }

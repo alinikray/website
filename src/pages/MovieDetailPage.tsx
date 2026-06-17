@@ -1,87 +1,66 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Play,
-  Heart,
-  Bookmark,
-  Share2,
-  Star,
-  Calendar,
-  Clock,
-  Globe,
-  ChevronDown,
-  ChevronUp,
-  Download,
-  MessageCircle,
-  Award,
-  Users,
-  Clapperboard,
+  Play, Plus, Check, Star, Clock, Calendar, Globe,
+  Heart, Share2, ChevronRight, Eye, Users,
+  MessageSquare, ThumbsUp, ChevronDown, Download,
+  Subtitles, HardDrive, Film, Award, Clapperboard, BookOpen,
+  Info
 } from 'lucide-react';
+import { getMovieById, getSimilarMovies, clips } from '../data/mockData';
 
-const movieData = {
-  id: 1,
-  title: 'Dune: Part Two',
-  year: 2024,
-  rating: 8.8,
-  runtime: '2h 46m',
-  genres: ['Sci-Fi', 'Adventure', 'Drama'],
-  language: 'English',
-  country: 'USA',
-  director: 'Denis Villeneuve',
-  synopsis: 'Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family. Facing a choice between the love of his life and the fate of the universe, he must prevent a terrible future only he can foresee.',
-  backdrop: 'https://images.pexels.com/photos/3915398/pexels-photo-3915398.jpeg?auto=compress&cs=tinysrgb&w=1920',
-  poster: 'https://images.pexels.com/photos/3915398/pexels-photo-3915398.jpeg?auto=compress&cs=tinysrgb&w=600',
-  cast: [
-    { name: 'Timothée Chalamet', role: 'Paul Atreides', image: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200' },
-    { name: 'Zendaya', role: 'Chani', image: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=200' },
-    { name: 'Rebecca Ferguson', role: 'Lady Jessica', image: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=200' },
-    { name: 'Austin Butler', role: 'Feyd-Rautha', image: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=200' },
-  ],
-  reviews: [
-    { author: 'MovieBuff42', rating: 9, content: 'A masterpiece of science fiction cinema. Villeneuve has outdone himself.', date: 'Mar 15, 2024' },
-    { author: 'CinemaLover', rating: 10, content: 'Visually stunning with incredible performances. This is epic filmmaking at its finest.', date: 'Mar 10, 2024' },
-  ],
-  awards: ['Best Visual Effects - Academy Awards', 'Best Cinematography - BAFTA', 'Best Sound - Critics\' Choice'],
-  downloads: [
-    { quality: '1080p', size: '2.4 GB', subtitles: 'English, Spanish, French' },
-    { quality: '720p', size: '1.2 GB', subtitles: 'English' },
-    { quality: '480p', size: '600 MB', subtitles: 'English' },
-  ],
-};
+const mockComments = [
+  { id: 1, name: 'Reza M.', avatar: 'RM', text: 'Absolutely stunning cinematography. The final act blew my mind.', likes: 142, time: '2 days ago' },
+  { id: 2, name: 'Sara K.', avatar: 'SK', text: 'One of the best Iranian films I have ever seen. A masterpiece.', likes: 89, time: '3 days ago' },
+  { id: 3, name: 'Ali H.', avatar: 'AH', text: 'The performances were outstanding. Highly recommended.', likes: 67, time: '1 week ago' },
+];
+
+const mockAwards = [
+  { ceremony: 'Tehran Film Festival', year: 2024, award: 'Best Film', won: true },
+  { ceremony: 'Fajr International Film Festival', year: 2024, award: 'Best Director', won: true },
+  { ceremony: 'Asia Pacific Screen Awards', year: 2023, award: 'Best Original Screenplay', won: false },
+];
+
+const downloadOptions = [
+  { quality: '1080p', label: 'Full HD', size: '2.3 GB', icon: '🎬' },
+  { quality: '720p', label: 'HD', size: '1.1 GB', icon: '📺' },
+  { quality: '480p', label: 'SD', size: '520 MB', icon: '📱' },
+];
 
 function Accordion({ title, icon: Icon, children, defaultOpen = false }: {
   title: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ElementType;
   children: React.ReactNode;
   defaultOpen?: boolean;
 }) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="bg-surface-900/50 rounded-xl border border-surface-800/50 overflow-hidden">
+    <div className="glass rounded-2xl overflow-hidden">
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-4 text-left"
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between p-5 text-left hover:bg-dark-700/30 transition-colors"
       >
         <div className="flex items-center gap-3">
           <Icon className="w-5 h-5 text-accent-400" />
-          <span className="font-semibold text-white">{title}</span>
+          <span className="text-white font-semibold">{title}</span>
         </div>
-        {isOpen ? (
-          <ChevronUp className="w-5 h-5 text-surface-400" />
-        ) : (
-          <ChevronDown className="w-5 h-5 text-surface-400" />
-        )}
+        <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+          <ChevronDown className="w-5 h-5 text-gray-400" />
+        </motion.div>
       </button>
       <AnimatePresence>
-        {isOpen && (
+        {open && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            initial={{ height: 0 }}
+            animate={{ height: 'auto' }}
+            exit={{ height: 0 }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            className="overflow-hidden"
           >
-            <div className="px-4 pb-4">{children}</div>
+            <div className="px-5 pb-5 border-t border-dark-700/50">
+              {children}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -90,241 +69,449 @@ function Accordion({ title, icon: Icon, children, defaultOpen = false }: {
 }
 
 export default function MovieDetailPage() {
+  const { id } = useParams();
+  const movie = getMovieById(id || '');
+  const similarMovies = movie ? getSimilarMovies(movie.id) : [];
+  const movieClips = clips.filter(c => c.movieId === id);
+
   const [isSaved, setIsSaved] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+  const [userRating, setUserRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [commentLikes, setCommentLikes] = useState<Record<number, boolean>>({});
 
-  const movie = movieData;
+  if (!movie) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-white">Movie not found</h1>
+          <Link to="/" className="text-accent-400 hover:text-accent-300 mt-4 inline-block">Go back home</Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-surface-950">
-      {/* Hero Section */}
-      <section className="relative h-[70vh] overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${movie.backdrop})` }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-surface-950 via-surface-950/80 to-surface-950/30" />
-        <div className="absolute inset-0 bg-gradient-to-t from-surface-950 via-transparent to-surface-950/30" />
+    <div className="min-h-screen -mt-20 md:-mt-24">
+      {/* CINEMATIC BACKDROP */}
+      <div className="relative h-[60vh] md:h-[80vh] overflow-hidden">
+        <motion.div
+          initial={{ scale: 1.08 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 2, ease: 'easeOut' }}
+          className="absolute inset-0"
+        >
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${movie.backdrop})` }}
+          />
+          {/* Subtle blur */}
+          <div className="absolute inset-0 backdrop-blur-[1px]" />
+        </motion.div>
 
-        <div className="absolute inset-0 flex items-end z-10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-8">
-            <div className="flex gap-8">
-              {/* Poster */}
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="hidden md:block w-56 flex-shrink-0"
-              >
-                <img
-                  src={movie.poster}
-                  alt={movie.title}
-                  className="w-full rounded-xl shadow-2xl shadow-black/50"
-                />
-              </motion.div>
+        {/* Gradient overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-dark-900 via-dark-900/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-dark-900/70 via-transparent to-dark-900/40" />
 
-              {/* Info */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="flex-1 pb-4"
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  {movie.genres.map(g => (
-                    <span key={g} className="px-3 py-1 rounded-full bg-surface-800/50 text-surface-300 text-sm">
-                      {g}
-                    </span>
+        {/* Purple ambient glow */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-accent-950/30 to-transparent" />
+
+        {/* Play button overlay */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="w-20 h-20 rounded-full bg-white/10 backdrop-blur-md border-2 border-white/30 flex items-center justify-center shadow-2xl"
+          >
+            <Play className="w-9 h-9 text-white fill-current ml-1" />
+          </motion.button>
+        </div>
+      </div>
+
+      {/* MAIN CONTENT */}
+      <div className="relative -mt-[48vh] md:-mt-[60vh] z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+
+          {/* TOP ROW: Poster + Info */}
+          <div className="flex flex-col lg:flex-row gap-6 md:gap-10">
+
+            {/* Poster */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="flex-shrink-0 mx-auto lg:mx-0"
+            >
+              <div className="w-[160px] md:w-[220px] rounded-2xl overflow-hidden shadow-2xl shadow-black/80 ring-1 ring-white/10">
+                <img src={movie.poster} alt={movie.title} className="w-full aspect-[2/3] object-cover" />
+              </div>
+              {/* Rating */}
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-gray-500">IMDb</span>
+                  <div className="flex items-center gap-1 text-yellow-400 font-bold">
+                    <Star className="w-3.5 h-3.5 fill-current" />
+                    {movie.rating}
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 text-center">Rate this movie</p>
+                <div className="flex justify-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <motion.button
+                      key={star}
+                      whileHover={{ scale: 1.2 }}
+                      whileTap={{ scale: 0.9 }}
+                      onMouseEnter={() => setHoverRating(star * 2)}
+                      onMouseLeave={() => setHoverRating(0)}
+                      onClick={() => setUserRating(star * 2)}
+                    >
+                      <Star className={`w-5 h-5 transition-colors ${star * 2 <= (hoverRating || userRating) ? 'text-yellow-400 fill-current' : 'text-gray-700'}`} />
+                    </motion.button>
                   ))}
                 </div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">{movie.title}</h1>
-                <div className="flex items-center flex-wrap gap-4 text-surface-400 mb-4">
-                  <span className="flex items-center gap-1 text-yellow-400">
-                    <Star className="w-5 h-5 fill-current" />
-                    {movie.rating}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    {movie.year}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    {movie.runtime}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Globe className="w-4 h-4" />
-                    {movie.language}
-                  </span>
-                </div>
-                <p className="text-surface-300 max-w-2xl mb-6">{movie.synopsis}</p>
-
-                <div className="flex items-center gap-3">
-                  <button className="flex items-center gap-2 px-8 py-3 bg-accent-500 hover:bg-accent-600 rounded-xl text-white font-medium transition-all shadow-lg shadow-accent-500/20">
-                    <Play className="w-5 h-5 fill-current" />
-                    Watch Now
-                  </button>
-                  <button
-                    onClick={() => setIsSaved(!isSaved)}
-                    className={`p-3 rounded-xl border transition-all ${
-                      isSaved
-                        ? 'bg-accent-500 border-accent-500 text-white'
-                        : 'bg-surface-800/50 border-surface-700 text-surface-400 hover:text-white'
-                    }`}
-                  >
-                    <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-current' : ''}`} />
-                  </button>
-                  <button
-                    onClick={() => setIsLiked(!isLiked)}
-                    className={`p-3 rounded-xl border transition-all ${
-                      isLiked
-                        ? 'bg-red-500 border-red-500 text-white'
-                        : 'bg-surface-800/50 border-surface-700 text-surface-400 hover:text-white'
-                    }`}
-                  >
-                    <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
-                  </button>
-                  <button className="p-3 rounded-xl bg-surface-800/50 border border-surface-700 text-surface-400 hover:text-white transition-all">
-                    <Share2 className="w-5 h-5" />
-                  </button>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Content Sections */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 space-y-4">
-            <Accordion title="Story" icon={Clapperboard} defaultOpen>
-              <p className="text-surface-300 leading-relaxed">{movie.synopsis}</p>
-              <div className="mt-4 text-sm text-surface-500">
-                <span>Directed by </span>
-                <span className="text-white">{movie.director}</span>
+                {userRating > 0 && (
+                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-accent-400 text-center">
+                    Your rating: {userRating}/10
+                  </motion.p>
+                )}
               </div>
-            </Accordion>
+            </motion.div>
 
-            <Accordion title="Cast" icon={Users}>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {movie.cast.map(person => (
-                  <div key={person.name} className="text-center">
-                    <img
-                      src={person.image}
-                      alt={person.name}
-                      className="w-16 h-16 rounded-full object-cover mx-auto mb-2"
-                    />
-                    <p className="text-sm font-medium text-white">{person.name}</p>
-                    <p className="text-xs text-surface-500">{person.role}</p>
-                  </div>
-                ))}
-              </div>
-            </Accordion>
+            {/* Info */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.6 }}
+              className="flex-1 text-center lg:text-left"
+            >
+              <h1 className="text-3xl md:text-5xl font-display text-white mb-1 text-shadow-lg">
+                {movie.title}
+              </h1>
+              <h2 className="text-lg text-gray-400 mb-4">{movie.titlePersian}</h2>
 
-            <Accordion title="Production" icon={Clapperboard}>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-surface-500">Director</p>
-                  <p className="text-white">{movie.director}</p>
+              {/* Meta row */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 md:gap-3 mb-5">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-500/20 text-yellow-400">
+                  <Star className="w-4 h-4 fill-current" />
+                  <span className="font-bold">{movie.rating}</span>
+                  <span className="text-yellow-500/70 text-xs">IMDb</span>
                 </div>
-                <div>
-                  <p className="text-surface-500">Language</p>
-                  <p className="text-white">{movie.language}</p>
-                </div>
-                <div>
-                  <p className="text-surface-500">Country</p>
-                  <p className="text-white">{movie.country}</p>
-                </div>
-                <div>
-                  <p className="text-surface-500">Runtime</p>
-                  <p className="text-white">{movie.runtime}</p>
-                </div>
+                <span className="flex items-center gap-1.5 text-sm text-gray-400">
+                  <Calendar className="w-4 h-4" />{movie.year}
+                </span>
+                <span className="flex items-center gap-1.5 text-sm text-gray-400">
+                  <Clock className="w-4 h-4" />{Math.floor(movie.duration / 60)}h {movie.duration % 60}m
+                </span>
+                <span className="flex items-center gap-1.5 text-sm text-gray-400">
+                  <Globe className="w-4 h-4" />{movie.country}
+                </span>
               </div>
-            </Accordion>
 
-            <Accordion title="Reviews" icon={MessageCircle}>
-              <div className="space-y-4">
-                {movie.reviews.map((review, i) => (
-                  <div key={i} className="bg-surface-800/30 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-white">{review.author}</span>
-                      <span className="flex items-center gap-1 text-yellow-400 text-sm">
-                        <Star className="w-4 h-4 fill-current" />
-                        {review.rating}/10
-                      </span>
-                    </div>
-                    <p className="text-surface-300 text-sm">{review.content}</p>
-                    <p className="text-xs text-surface-500 mt-2">{review.date}</p>
-                  </div>
-                ))}
-              </div>
-            </Accordion>
-
-            <Accordion title="Awards" icon={Award}>
-              <ul className="space-y-2">
-                {movie.awards.map((award, i) => (
-                  <li key={i} className="flex items-start gap-2 text-surface-300">
-                    <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 mt-2 flex-shrink-0" />
-                    {award}
-                  </li>
-                ))}
-              </ul>
-            </Accordion>
-
-            <Accordion title="Download" icon={Download}>
-              <div className="space-y-3">
-                {movie.downloads.map((dl, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between bg-surface-800/30 rounded-lg p-4"
-                  >
-                    <div>
-                      <span className="font-medium text-white">{dl.quality}</span>
-                      <span className="text-surface-500 mx-2">•</span>
-                      <span className="text-surface-400">{dl.size}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-surface-500">{dl.subtitles}</span>
-                      <button className="px-4 py-2 bg-accent-500 hover:bg-accent-600 rounded-lg text-white text-sm transition-colors">
-                        Download
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Accordion>
-          </div>
-
-          {/* Sidebar */}
-          <div>
-            <div className="bg-surface-900/50 rounded-xl border border-surface-800/50 p-6 sticky top-20">
-              <h3 className="font-semibold text-white mb-4">More Like This</h3>
-              <div className="space-y-3">
-                {[1, 2, 3].map(i => (
+              {/* Genres */}
+              <div className="flex flex-wrap justify-center lg:justify-start gap-2 mb-5">
+                {movie.genres.map(genre => (
                   <Link
-                    key={i}
-                    to={`/movie/${i + 2}`}
-                    className="flex gap-3 group"
+                    key={genre}
+                    to={`/search?genre=${encodeURIComponent(genre)}`}
+                    className="px-3 py-1.5 rounded-full glass text-sm text-gray-300 hover:text-white hover:bg-dark-700 transition-colors"
                   >
-                    <img
-                      src={`https://images.pexels.com/photos/${[384555, 2799110, 1667580][i - 1]}/pexels-photo-${[384555, 2799110, 1667580][i - 1]}.jpeg?auto=compress&cs=tinysrgb&w=200`}
-                      alt=""
-                      className="w-16 h-20 object-cover rounded-lg"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-white group-hover:text-accent-400 transition-colors truncate">
-                        {['Blade Runner 2049', 'Arrival', 'The Batman'][i - 1]}
-                      </p>
-                      <p className="text-xs text-surface-500 mt-0.5">{[2017, 2016, 2022][i - 1]}</p>
-                      <div className="flex items-center gap-1 mt-1 text-yellow-400 text-xs">
-                        <Star className="w-3 h-3 fill-current" />
-                        {[8.0, 7.9, 7.8][i - 1]}
-                      </div>
-                    </div>
+                    {genre}
                   </Link>
                 ))}
               </div>
-            </div>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 mb-5">
+                <motion.button
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
+                  className="flex items-center gap-2.5 bg-accent-600 hover:bg-accent-500 text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-accent-500/30 transition-all text-lg"
+                >
+                  <Play className="w-6 h-6 fill-current" />
+                  Watch Now
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => setIsSaved(!isSaved)}
+                  className={`flex items-center gap-2 px-6 py-4 rounded-xl font-semibold transition-all ${
+                    isSaved
+                      ? 'bg-accent-600/30 text-accent-400 border border-accent-500/50'
+                      : 'glass text-white hover:bg-dark-700/50'
+                  }`}
+                >
+                  {isSaved ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                  {isSaved ? 'Saved' : 'Add to List'}
+                </motion.button>
+              </div>
+
+              {/* Engagement row */}
+              <div className="flex items-center justify-center lg:justify-start gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setIsLiked(!isLiked)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all ${isLiked ? 'bg-red-500/20 text-red-400' : 'glass text-gray-400 hover:text-red-400'}`}
+                >
+                  <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
+                  <span className="text-sm">{isLiked ? 'Liked' : 'Like'}</span>
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="flex items-center gap-2 glass text-gray-400 hover:text-white px-4 py-2.5 rounded-lg transition-all"
+                >
+                  <Share2 className="w-5 h-5" />
+                  <span className="text-sm">Share</span>
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="flex items-center gap-2 glass text-gray-400 hover:text-white px-4 py-2.5 rounded-lg transition-all"
+                >
+                  <Eye className="w-5 h-5" />
+                  <span className="text-sm">Viewed</span>
+                </motion.button>
+              </div>
+            </motion.div>
           </div>
+
+          {/* ACCORDION SECTIONS */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-10 space-y-3"
+          >
+            {/* Story */}
+            <Accordion title="Story" icon={BookOpen}>
+              <p className="text-gray-300 leading-relaxed mt-4">{movie.description}</p>
+            </Accordion>
+
+            {/* Cast */}
+            <Accordion title="Cast" icon={Users}>
+              <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 mt-4">
+                {movie.cast.map((member, index) => (
+                  <Link key={member.id} to={`/actor/${member.id}`}>
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.04 }}
+                      whileHover={{ scale: 1.04 }}
+                      className="flex-shrink-0 w-[110px] md:w-[130px] text-center"
+                    >
+                      <div className="w-[90px] md:w-[110px] h-[90px] md:h-[110px] rounded-2xl overflow-hidden mb-2.5 mx-auto ring-1 ring-white/10">
+                        <img
+                          src={member.photo}
+                          alt={member.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${member.name}&background=7C3AED&color=fff&size=110`;
+                          }}
+                        />
+                      </div>
+                      <p className="text-sm font-medium text-white line-clamp-1 hover:text-accent-400 transition-colors">{member.name}</p>
+                      <p className="text-xs text-accent-400 mt-0.5 line-clamp-1">{member.role}</p>
+                    </motion.div>
+                  </Link>
+                ))}
+              </div>
+            </Accordion>
+
+            {/* Production */}
+            <Accordion title="Production" icon={Clapperboard}>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                {[
+                  { label: 'Director', value: movie.director },
+                  { label: 'Country', value: movie.country },
+                  { label: 'Language', value: movie.language },
+                  { label: 'Year', value: movie.year.toString() },
+                  { label: 'Runtime', value: `${Math.floor(movie.duration / 60)}h ${movie.duration % 60}m` },
+                  { label: 'Genres', value: movie.genres.join(', ') },
+                ].map(item => (
+                  <div key={item.label} className="bg-dark-800/50 rounded-xl p-3">
+                    <p className="text-xs text-gray-500 mb-1">{item.label}</p>
+                    <p className="text-sm text-white font-medium">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+            </Accordion>
+
+            {/* Reviews */}
+            <Accordion title="Reviews" icon={MessageSquare}>
+              <div className="space-y-3 mt-4 mb-4">
+                {mockComments.map((comment) => (
+                  <div key={comment.id} className="bg-dark-800/40 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-full bg-accent-600/50 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                        {comment.avatar}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="text-sm font-semibold text-white">{comment.name}</span>
+                          <span className="text-xs text-gray-500">{comment.time}</span>
+                        </div>
+                        <p className="text-gray-300 text-sm">{comment.text}</p>
+                        <button
+                          onClick={() => setCommentLikes(prev => ({ ...prev, [comment.id]: !prev[comment.id] }))}
+                          className={`flex items-center gap-1.5 mt-2 text-xs transition-colors ${commentLikes[comment.id] ? 'text-accent-400' : 'text-gray-500 hover:text-white'}`}
+                        >
+                          <ThumbsUp className={`w-3.5 h-3.5 ${commentLikes[comment.id] ? 'fill-current' : ''}`} />
+                          {comment.likes + (commentLikes[comment.id] ? 1 : 0)}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-3">
+                <div className="w-9 h-9 rounded-full bg-accent-600/50 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                  Me
+                </div>
+                <div className="flex-1 relative">
+                  <input type="text" placeholder="Add a comment..." className="w-full input-field pr-12 text-sm" />
+                  <button className="absolute right-3 top-1/2 -translate-y-1/2 text-accent-400 hover:text-accent-300">
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </Accordion>
+
+            {/* Awards */}
+            <Accordion title="Awards & Recognition" icon={Award}>
+              <div className="space-y-3 mt-4">
+                {mockAwards.map((award, i) => (
+                  <div key={i} className="flex items-center gap-4 bg-dark-800/40 rounded-xl p-4">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${award.won ? 'bg-yellow-500/20' : 'bg-dark-700'}`}>
+                      <Award className={`w-5 h-5 ${award.won ? 'text-yellow-400' : 'text-gray-500'}`} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-white text-sm font-medium">{award.award}</p>
+                      <p className="text-gray-500 text-xs mt-0.5">{award.ceremony} · {award.year}</p>
+                    </div>
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${award.won ? 'bg-yellow-500/20 text-yellow-400' : 'bg-dark-700 text-gray-500'}`}>
+                      {award.won ? 'Won' : 'Nominated'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </Accordion>
+
+            {/* Download */}
+            <Accordion title="Download" icon={Download}>
+              <div className="mt-4 space-y-3">
+                <p className="text-xs text-gray-500 mb-4 flex items-center gap-2">
+                  <Info className="w-4 h-4" />
+                  Downloads are available for Premium subscribers. Expires after 30 days.
+                </p>
+                {downloadOptions.map((opt) => (
+                  <div key={opt.quality} className="flex items-center justify-between bg-dark-800/50 rounded-xl p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-accent-600/20 flex items-center justify-center text-lg">
+                        {opt.icon}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-white font-semibold text-sm">{opt.quality}</span>
+                          <span className="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-gray-400">{opt.label}</span>
+                        </div>
+                        <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                          <span className="flex items-center gap-1"><HardDrive className="w-3 h-3" />{opt.size}</span>
+                          <span className="flex items-center gap-1"><Subtitles className="w-3 h-3" />Subtitles: FA, EN</span>
+                          <span className="flex items-center gap-1"><Film className="w-3 h-3" />Persian Audio</span>
+                        </div>
+                      </div>
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent-600 hover:bg-accent-500 text-white text-sm font-medium transition-all"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download
+                    </motion.button>
+                  </div>
+                ))}
+              </div>
+            </Accordion>
+          </motion.div>
+
+          {/* EXPLORE CLIPS */}
+          {movieClips.length > 0 && (
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="mt-8"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-white">Clips from this Movie</h2>
+                <Link to="/explore" className="flex items-center gap-1 text-accent-400 hover:text-accent-300 text-sm">
+                  View in Explore <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+              <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+                {movieClips.map((clip, index) => (
+                  <motion.div
+                    key={clip.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 + index * 0.08 }}
+                    className="flex-shrink-0 w-[150px] md:w-[170px] group"
+                  >
+                    <div className="relative aspect-[9/16] rounded-xl overflow-hidden">
+                      <img src={clip.thumbnail} alt={clip.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="w-12 h-12 rounded-full bg-accent-600 flex items-center justify-center shadow-glow">
+                          <Play className="w-5 h-5 text-white fill-current" />
+                        </div>
+                      </div>
+                      <div className="absolute bottom-2 left-2 right-2">
+                        <p className="text-white text-xs font-medium line-clamp-2">{clip.title}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.section>
+          )}
+
+          {/* SIMILAR MOVIES */}
+          {similarMovies.length > 0 && (
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mt-8 pb-14"
+            >
+              <h2 className="text-xl font-bold text-white mb-5">
+                Similar Movies
+                <span className="text-sm text-gray-500 font-normal mr-2"> فیلم‌های مشابه</span>
+              </h2>
+              <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+                {similarMovies.map((sim, index) => (
+                  <Link key={sim.id} to={`/movie/${sim.id}`} className="flex-shrink-0 w-[150px] md:w-[170px] group">
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.6 + index * 0.05 }}
+                      whileHover={{ scale: 1.04 }}
+                      className="relative aspect-[2/3] rounded-xl overflow-hidden"
+                    >
+                      <img src={sim.poster} alt={sim.title} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70" />
+                      <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded glass text-yellow-400 text-xs">
+                        <Star className="w-3 h-3 fill-current" />{sim.rating}
+                      </div>
+                    </motion.div>
+                    <p className="text-sm font-medium text-white mt-2 line-clamp-1 group-hover:text-accent-400 transition-colors">{sim.title}</p>
+                    <p className="text-xs text-gray-500">{sim.year}</p>
+                  </Link>
+                ))}
+              </div>
+            </motion.section>
+          )}
         </div>
       </div>
     </div>

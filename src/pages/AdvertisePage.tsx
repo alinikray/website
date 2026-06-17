@@ -1,116 +1,77 @@
 import { motion } from 'framer-motion';
-import { Tv, Users, Target, ChartBar as BarChart3, Check } from 'lucide-react';
+import { TrendingUp, Users, Globe, BarChart3, Mail } from 'lucide-react';
 
-const benefits = [
-  'Reach millions of engaged entertainment enthusiasts',
-  'Advanced targeting by demographics, interests, and viewing habits',
-  'Brand-safe premium content environment',
-  'Real-time performance analytics',
-  'Flexible campaign budgets and durations',
-  'Dedicated account management',
-];
-
-const adFormats = [
-  { name: 'Pre-Roll Ads', desc: '15-30 second video spots before content' },
-  { name: 'Banner Ads', desc: 'Display placements throughout the platform' },
-  { name: 'Sponsored Content', desc: 'Native placements in recommendations' },
-  { name: 'Homepage Takeover', desc: 'Full homepage brand experience' },
+const packages = [
+  { name: 'Starter', price: '$500/mo', reach: '50K–100K', features: ['Banner ads', 'Mobile targeting', 'Basic analytics'] },
+  { name: 'Growth', price: '$2,000/mo', reach: '200K–500K', features: ['Video pre-rolls', 'Advanced targeting', 'Detailed analytics', 'A/B testing'], popular: true },
+  { name: 'Enterprise', price: 'Custom', reach: '1M+', features: ['Sponsored content', 'Homepage takeover', 'Custom integrations', 'Dedicated account manager'] },
 ];
 
 export default function AdvertisePage() {
   return (
-    <div className="min-h-screen bg-surface-950 py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16"
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-500/10 border border-accent-500/20 text-accent-400 text-sm mb-6">
-            <Tv className="w-4 h-4" />
-            For Advertisers
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Advertise on Fynex Movies
-          </h1>
-          <p className="text-surface-400 max-w-2xl mx-auto text-lg">
-            Connect with millions of passionate entertainment fans through targeted, engaging ad experiences.
+    <div className="min-h-screen pb-20">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
+          <h1 className="text-4xl font-display text-white mb-4">Advertise With Us</h1>
+          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+            Reach millions of engaged Iranian cinema fans across our platform. Precise targeting, premium placements, measurable results.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           {[
-            { icon: Users, value: '10M+', label: 'Monthly Active Users' },
-            { icon: Target, value: '150+', label: 'Targeting Options' },
-            { icon: BarChart3, value: '95%', label: 'Viewability Rate' },
+            { icon: Users, label: 'Monthly Users', value: '2.4M+' },
+            { icon: Globe, label: 'Countries', value: '45+' },
+            { icon: TrendingUp, label: 'Avg. Session', value: '42 min' },
+            { icon: BarChart3, label: 'Completion Rate', value: '87%' },
           ].map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="bg-surface-900/50 rounded-2xl p-8 border border-surface-800/50 text-center"
-            >
-              <stat.icon className="w-10 h-10 text-accent-400 mx-auto mb-4" />
-              <p className="text-4xl font-bold text-white">{stat.value}</p>
-              <p className="text-sm text-surface-400 mt-2">{stat.label}</p>
+            <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="glass rounded-xl p-4 text-center">
+              <stat.icon className="w-5 h-5 text-accent-400 mx-auto mb-2" />
+              <p className="text-xl font-bold text-white">{stat.value}</p>
+              <p className="text-xs text-gray-500">{stat.label}</p>
             </motion.div>
           ))}
         </div>
 
-        <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <h2 className="text-2xl font-bold text-white mb-6">Why Advertise With Us</h2>
-            <ul className="space-y-4">
-              {benefits.map((benefit, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Check className="w-3 h-3 text-green-400" />
-                  </div>
-                  <span className="text-surface-300">{benefit}</span>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <h2 className="text-2xl font-bold text-white mb-6">Ad Formats</h2>
-            <div className="space-y-4">
-              {adFormats.map((format) => (
-                <div
-                  key={format.name}
-                  className="bg-surface-900/50 rounded-xl p-5 border border-surface-800/50"
-                >
-                  <h3 className="font-semibold text-white">{format.name}</h3>
-                  <p className="text-sm text-surface-400 mt-1">{format.desc}</p>
+        <h2 className="text-xl font-bold text-white mb-5 text-center">Advertising Packages</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+          {packages.map((pkg, i) => (
+            <motion.div
+              key={pkg.name}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className={`glass rounded-2xl p-6 relative ${pkg.popular ? 'border-accent-500/50' : ''}`}
+            >
+              {pkg.popular && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-accent-600 text-white text-xs font-semibold">
+                  Most Popular
                 </div>
-              ))}
-            </div>
-          </motion.div>
+              )}
+              <h3 className="text-lg font-bold text-white mb-1">{pkg.name}</h3>
+              <p className="text-2xl font-bold text-accent-400 mb-1">{pkg.price}</p>
+              <p className="text-xs text-gray-500 mb-4">Reach: {pkg.reach} users/mo</p>
+              <ul className="space-y-2 mb-5">
+                {pkg.features.map(f => (
+                  <li key={f} className="flex items-center gap-2 text-sm text-gray-300">
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent-500 flex-shrink-0" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <button className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all ${pkg.popular ? 'btn-primary' : 'glass text-white hover:bg-dark-700'}`}>
+                Get Started
+              </button>
+            </motion.div>
+          ))}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-gradient-to-r from-accent-900/30 to-surface-900/30 rounded-2xl p-8 border border-accent-800/30 text-center"
-        >
-          <h2 className="text-2xl font-bold text-white mb-4">Ready to Start Your Campaign?</h2>
-          <p className="text-surface-300 mb-6 max-w-xl mx-auto">
-            Contact our advertising team to discuss your campaign goals and receive a custom proposal.
-          </p>
-          <a
-            href="mailto:advertise@fynexmovies.com"
-            className="inline-flex items-center gap-2 px-8 py-3 bg-accent-500 hover:bg-accent-600 rounded-lg text-white font-medium transition-colors"
-          >
-            Contact Sales Team
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="glass rounded-xl p-6 text-center">
+          <p className="text-white font-semibold mb-1">Ready to reach our audience?</p>
+          <p className="text-gray-400 text-sm mb-3">Contact our advertising team for custom packages and media kits.</p>
+          <a href="mailto:ads@fynexmovies.com" className="flex items-center gap-2 justify-center text-accent-400 hover:text-accent-300 transition-colors text-sm">
+            <Mail className="w-4 h-4" />
+            ads@fynexmovies.com
           </a>
         </motion.div>
       </div>
