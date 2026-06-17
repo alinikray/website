@@ -45,7 +45,6 @@ export default function Header() {
     { path: '/search?type=movies', label: 'Movies', icon: Film },
     { path: '/search?type=series', label: 'Series', icon: Tv },
     { path: '/explore', label: 'Explore', icon: Compass, highlight: true },
-    { path: '/watchlist', label: 'Watchlist', icon: Bookmark },
   ];
 
   return (
