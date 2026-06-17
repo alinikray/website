@@ -54,9 +54,9 @@ export default function AuthPage() {
         <div className="relative z-10 flex flex-col justify-between p-12">
           <Link to="/" className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-500 to-accent-700 flex items-center justify-center shadow-glow">
-              <span className="text-white font-bold text-lg">S</span>
+              <span className="text-white font-bold text-lg">F</span>
             </div>
-            <span className="text-2xl font-bold text-white">Streamira</span>
+            <span className="text-2xl font-bold text-white">Fynex Movies</span>
           </Link>
 
           <div className="space-y-6">
@@ -83,7 +83,7 @@ export default function AuthPage() {
           </div>
 
           <p className="text-gray-600 text-sm">
-            © 2024 Streamira. All rights reserved.
+            © 2026 Fynex Movies. All rights reserved.
           </p>
         </div>
       </div>
@@ -95,9 +95,9 @@ export default function AuthPage() {
           <div className="lg:hidden flex justify-center mb-8">
             <Link to="/" className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-500 to-accent-700 flex items-center justify-center shadow-glow">
-                <span className="text-white font-bold text-lg">S</span>
+                <span className="text-white font-bold text-lg">F</span>
               </div>
-              <span className="text-xl font-bold text-white">Streamira</span>
+              <span className="text-xl font-bold text-white">Fynex Movies</span>
             </Link>
           </div>
 

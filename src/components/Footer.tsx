@@ -1,109 +1,130 @@
 import { Link } from 'react-router-dom';
-import { Twitter, Instagram, Youtube, Facebook, Play } from 'lucide-react';
+import { Film } from 'lucide-react';
 
-const links = {
-  'Company': [
-    { label: 'About Us', href: '#' },
-    { label: 'Careers', href: '#' },
-    { label: 'Press', href: '#' },
-    { label: 'Advertise', href: '#' },
+const footerLinks = {
+  product: [
+    { to: '/movies', label: 'Movies' },
+    { to: '/series', label: 'TV Series' },
+    { to: '/search', label: 'Search' },
+    { to: '/explore', label: 'Explore' },
   ],
-  'Support': [
-    { label: 'Help Center', href: '#' },
-    { label: 'Contact Us', href: '#' },
-    { label: 'FAQ', href: '#' },
-    { label: 'Request a Movie', href: '#' },
+  company: [
+    { to: '/about', label: 'About Us' },
+    { to: '/careers', label: 'Careers' },
+    { to: '/contact', label: 'Contact' },
+    { to: '/advertise', label: 'Advertise' },
   ],
-  'Legal': [
-    { label: 'Privacy Policy', href: '#' },
-    { label: 'Terms of Service', href: '#' },
-    { label: 'Cookie Policy', href: '#' },
-    { label: 'DMCA', href: '#' },
+  support: [
+    { to: '/faq', label: 'FAQ' },
+    { to: '/support', label: 'Help Center' },
+    { to: '/request', label: 'Request Content' },
+    { to: '/terms', label: 'Terms of Service' },
   ],
-  'Browse': [
-    { label: 'Movies', href: '/search?type=movies' },
-    { label: 'TV Series', href: '/search?type=series' },
-    { label: 'Explore Clips', href: '/explore' },
-    { label: 'Premium Plans', href: '/subscription' },
+  legal: [
+    { to: '/privacy', label: 'Privacy Policy' },
+    { to: '/terms', label: 'Terms of Use' },
+    { to: '/dmca', label: 'DMCA' },
   ],
 };
 
-const socials = [
-  { icon: Twitter, label: 'Twitter', href: '#' },
-  { icon: Instagram, label: 'Instagram', href: '#' },
-  { icon: Youtube, label: 'YouTube', href: '#' },
-  { icon: Facebook, label: 'Facebook', href: '#' },
-];
-
 export default function Footer() {
   return (
-    <footer className="bg-dark-950 border-t border-dark-800/50 mt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-8">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-10">
-          {/* Brand column */}
+    <footer className="border-t border-surface-800/50 bg-surface-950/80 backdrop-blur-xl">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
           <div className="col-span-2 md:col-span-1">
-            <Link to="/" className="flex items-center gap-2.5 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-500 to-accent-700 flex items-center justify-center shadow-lg shadow-accent-500/30">
-                <Play className="w-4 h-4 text-white fill-current ml-0.5" />
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-500 to-accent-700 flex items-center justify-center">
+                <Film className="w-6 h-6 text-white" />
               </div>
-              <span className="text-lg font-bold text-white">Streamira</span>
+              <span className="text-xl font-bold bg-gradient-to-r from-white to-surface-300 bg-clip-text text-transparent">
+                Fynex Movies
+              </span>
             </Link>
-            <p className="text-gray-500 text-sm leading-relaxed mb-5">
-              Iran's premier streaming platform for movies and series. Discover cinema that moves you.
+            <p className="mt-4 text-sm text-surface-500 max-w-xs">
+              Your ultimate destination for streaming movies and TV series. Discover, watch, and enjoy.
             </p>
-            <div className="flex gap-3">
-              {socials.map(({ icon: Icon, label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  className="w-9 h-9 rounded-lg bg-dark-800 hover:bg-dark-700 flex items-center justify-center text-gray-500 hover:text-white transition-all"
-                >
-                  <Icon className="w-4 h-4" />
-                </a>
-              ))}
-            </div>
           </div>
 
-          {/* Link columns */}
-          {Object.entries(links).map(([title, items]) => (
-            <div key={title}>
-              <h3 className="text-white font-semibold text-sm mb-3">{title}</h3>
-              <ul className="space-y-2">
-                {items.map((item) => (
-                  <li key={item.label}>
-                    {item.href.startsWith('/') ? (
-                      <Link
-                        to={item.href}
-                        className="text-gray-500 hover:text-gray-300 text-sm transition-colors"
-                      >
-                        {item.label}
-                      </Link>
-                    ) : (
-                      <a
-                        href={item.href}
-                        className="text-gray-500 hover:text-gray-300 text-sm transition-colors"
-                      >
-                        {item.label}
-                      </a>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <div>
+            <h4 className="font-semibold text-white mb-4">Product</h4>
+            <ul className="space-y-2">
+              {footerLinks.product.map(link => (
+                <li key={link.to}>
+                  <Link
+                    to={link.to}
+                    className="text-sm text-surface-500 hover:text-white transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-white mb-4">Company</h4>
+            <ul className="space-y-2">
+              {footerLinks.company.map(link => (
+                <li key={link.to}>
+                  <Link
+                    to={link.to}
+                    className="text-sm text-surface-500 hover:text-white transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-white mb-4">Support</h4>
+            <ul className="space-y-2">
+              {footerLinks.support.map(link => (
+                <li key={link.to}>
+                  <Link
+                    to={link.to}
+                    className="text-sm text-surface-500 hover:text-white transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-white mb-4">Legal</h4>
+            <ul className="space-y-2">
+              {footerLinks.legal.map(link => (
+                <li key={link.to}>
+                  <Link
+                    to={link.to}
+                    className="text-sm text-surface-500 hover:text-white transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="pt-6 border-t border-dark-800/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-gray-600 text-sm">
-            © 2026 Streamira. All rights reserved.
+        <div className="mt-12 pt-8 border-t border-surface-800/50 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-surface-500">
+            {new Date().getFullYear()} Fynex Movies. All rights reserved.
           </p>
-          <div className="flex items-center gap-4 text-xs text-gray-600">
-            <a href="#" className="hover:text-gray-400 transition-colors">Privacy</a>
-            <a href="#" className="hover:text-gray-400 transition-colors">Terms</a>
-            <a href="#" className="hover:text-gray-400 transition-colors">Cookies</a>
-            <span>Iran · English</span>
+          <div className="flex items-center gap-6 text-sm text-surface-500">
+            <Link to="/privacy" className="hover:text-white transition-colors">
+              Privacy
+            </Link>
+            <Link to="/terms" className="hover:text-white transition-colors">
+              Terms
+            </Link>
+            <Link to="/sitemap" className="hover:text-white transition-colors">
+              Sitemap
+            </Link>
           </div>
         </div>
       </div>

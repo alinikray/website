@@ -160,9 +160,9 @@ export default function OnboardingPage() {
         {/* Logo */}
         <div className="flex items-center gap-2 mb-8 justify-center">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-500 to-accent-700 flex items-center justify-center">
-            <span className="text-white font-bold">S</span>
+            <span className="text-white font-bold">F</span>
           </div>
-          <span className="text-lg font-bold text-white">Streamira</span>
+          <span className="text-lg font-bold text-white">Fynex Movies</span>
         </div>
 
         {/* Progress bar */}
