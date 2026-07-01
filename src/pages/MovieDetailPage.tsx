@@ -226,6 +226,10 @@ export default function MovieDetailPage() {
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.96 }}
                   className="flex items-center gap-2.5 bg-accent-600 hover:bg-accent-500 text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-accent-500/30 transition-all text-lg"
+                  onClick={() => {
+                    const slug = movie.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                    window.location.href = `/watch/${slug}`;
+                  }}
                 >
                   <Play className="w-6 h-6 fill-current" />
                   Watch Now

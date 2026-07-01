@@ -22,6 +22,7 @@ import CareersPage from './pages/CareersPage';
 import AdvertisePage from './pages/AdvertisePage';
 import RequestPage from './pages/RequestPage';
 import SupportPage from './pages/SupportPage';
+import WatchPage from './pages/WatchPage';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/movie/:id" element={<MovieDetailPage />} />
+          <Route path="/watch/:movieSlug" element={<WatchPage />} />
           <Route path="/series/:id" element={<SeriesDetailPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/explore" element={<ExplorePage />} />

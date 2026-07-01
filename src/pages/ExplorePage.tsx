@@ -310,7 +310,7 @@ export default function ExplorePage() {
                   >
                     {content && (
                       <Link
-                        to={`/movie/${content.id}`}
+                        to={`/watch/${content.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`}
                         className="flex items-center gap-2 bg-accent-600 hover:bg-accent-500 text-white font-semibold px-5 py-3 rounded-xl transition-all shadow-lg shadow-accent-500/30 text-sm"
                       >
                         <Play className="w-4 h-4 fill-current" />

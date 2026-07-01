@@ -1,35 +1,63 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, CheckCircle2, Chrome } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, CheckCircle2, Chrome, AlertCircle } from 'lucide-react';
+import { useAuth } from '../lib/auth';
 
 type AuthMode = 'login' | 'register' | 'forgot';
 
 export default function AuthPage() {
+  const { signIn, signUp, resetPassword } = useAuth();
   const [mode, setMode] = useState<AuthMode>('login');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [confirm, setConfirm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    await new Promise(r => setTimeout(r, 1200));
-    setIsLoading(false);
-    if (mode === 'register') {
-      navigate('/onboarding');
-    } else if (mode === 'forgot') {
-      setForgotSent(true);
-    } else {
-      navigate('/');
+    setErrorMsg(null);
+
+    if (mode === 'register' && password !== confirm) {
+      setErrorMsg('Passwords do not match');
+      return;
     }
+
+    setIsLoading(true);
+    try {
+      if (mode === 'login') {
+        const { error } = await signIn(email, password);
+        if (error) {
+          setErrorMsg(error.includes('Invalid login') ? 'Invalid email or password' : error);
+        } else {
+          navigate('/');
+        }
+      } else if (mode === 'register') {
+        const { error } = await signUp(email, password, name || undefined);
+        if (error) {
+          setErrorMsg(error);
+        } else {
+          navigate('/onboarding');
+        }
+      } else {
+        const { error } = await resetPassword(email);
+        if (error) {
+          setErrorMsg(error);
+        } else {
+          setForgotSent(true);
+        }
+      }
+    } catch {
+      setErrorMsg('An unexpected error occurred. Please try again.');
+    }
+    setIsLoading(false);
   };
 
   const modeConfig = {
@@ -114,6 +142,13 @@ export default function AuthPage() {
                 <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">{title}</h1>
                 <p className="text-gray-400">{subtitle}</p>
               </div>
+
+              {errorMsg && (
+                <div className="mb-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  {errorMsg}
+                </div>
+              )}
 
               {forgotSent ? (
                 <div className="text-center py-8 space-y-4">
