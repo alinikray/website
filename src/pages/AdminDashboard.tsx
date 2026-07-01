@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Film, Tv, Users, Video, BarChart3,
@@ -6,8 +6,10 @@ import {
   Clock, Eye, Heart, Bookmark, ChevronRight, DollarSign,
   Bell, MessageSquare, Flag, Headphones, Activity,
   Star, Share2, ArrowUpRight, ArrowDownRight, Crown,
+  RefreshCw, Download, AlertCircle, CheckCircle2, Loader2,
 } from 'lucide-react';
-import { movies, series, clips } from '../data/mockData';
+import { supabase } from '../lib/supabase';
+import { triggerTmdbSync } from '../lib/api';
 
 type Tab = 'overview' | 'content' | 'moderation' | 'support' | 'notifications' | 'analytics';
 
@@ -58,14 +60,69 @@ const mockTickets = [
   { id: 'TKT-042', user: 'Mina R.', subject: 'Video not playing on iPhone', status: 'open', priority: 'high', time: '1h ago' },
   { id: 'TKT-041', user: 'Ahmad K.', subject: 'Billing issue - double charged', status: 'in_progress', priority: 'urgent', time: '3h ago' },
   { id: 'TKT-040', user: 'Negar J.', subject: 'Cannot change subtitle language', status: 'open', priority: 'medium', time: '5h ago' },
-  { id: 'TKT-039', user: 'Babak H.', subject: 'Missing episodes from series', status: 'resolved', priority: 'low', time: '1d ago' },
+  { id: 'TKT-039', user: 'Babak H.', subject: 'Missing episodes from contentSeries', status: 'resolved', priority: 'low', time: '1d ago' },
 ];
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
-  const [contentType, setContentType] = useState<'movies' | 'series' | 'clips' | 'actors'>('movies');
+  const [contentType, setContentType] = useState<'contentMovies' | 'contentSeries' | 'contentClips' | 'actors'>('contentMovies');
   const [searchQuery, setSearchQuery] = useState('');
   const [announcement, setAnnouncement] = useState('');
+  const [stats, setStats] = useState({ contentMovies: 0, contentSeries: 0, contentClips: 0, users: 0, comments: 0, watchlists: 0 });
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<{ ok: boolean; message: string } | null>(null);
+  const [contentMovies, setContentMovies] = useState<any[]>([]);
+  const [contentSeries, setContentSeries] = useState<any[]>([]);
+  const [contentClips, setContentClips] = useState<any[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const [m, s, c, u, cm, w] = await Promise.all([
+        supabase.from('contentMovies').select('*', { count: 'exact', head: true }),
+        supabase.from('contentSeries').select('*', { count: 'exact', head: true }),
+        supabase.from('explore_contentClips').select('*', { count: 'exact', head: true }),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('comments').select('*', { count: 'exact', head: true }),
+        supabase.from('watchlists').select('*', { count: 'exact', head: true }),
+      ]);
+      setStats({
+        contentMovies: m.count || 0,
+        contentSeries: s.count || 0,
+        contentClips: c.count || 0,
+        users: u.count || 0,
+        comments: cm.count || 0,
+        watchlists: w.count || 0,
+      });
+
+      // Fetch content for management tabs
+      const [contentMoviesData, contentSeriesData, contentClipsData] = await Promise.all([
+        supabase.from('contentMovies').select('*').order('created_at', { ascending: false }).limit(50),
+        supabase.from('contentSeries').select('*').order('created_at', { ascending: false }).limit(50),
+        supabase.from('explore_contentClips').select('*').order('created_at', { ascending: false }).limit(50),
+      ]);
+      setContentMovies(contentMoviesData.data || []);
+      setContentSeries(contentSeriesData.data || []);
+      setContentClips(contentClipsData.data || []);
+    })();
+  }, []);
+
+  const handleSync = async (action: string) => {
+    setSyncing(true);
+    setSyncResult(null);
+    const result = await triggerTmdbSync(action);
+    if (result.ok) {
+      setSyncResult({ ok: true, message: `Sync completed: ${JSON.stringify(result.data?.totals || {})}` });
+      const [m, s, c] = await Promise.all([
+        supabase.from('contentMovies').select('*', { count: 'exact', head: true }),
+        supabase.from('contentSeries').select('*', { count: 'exact', head: true }),
+        supabase.from('explore_contentClips').select('*', { count: 'exact', head: true }),
+      ]);
+      setStats(prev => ({ ...prev, contentMovies: m.count || 0, contentSeries: s.count || 0, contentClips: c.count || 0 }));
+    } else {
+      setSyncResult({ ok: false, message: result.error || 'Sync failed. Make sure TMDB_API_KEY secret is configured.' });
+    }
+    setSyncing(false);
+  };
 
   return (
     <div className="min-h-screen pb-12">
@@ -116,6 +173,68 @@ export default function AdminDashboard() {
                 {/* OVERVIEW */}
                 {activeTab === 'overview' && (
                   <div className="space-y-6">
+                    {/* TMDb Sync Section */}
+                    <div className="glass rounded-2xl p-5">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h3 className="text-white font-semibold flex items-center gap-2">
+                            <RefreshCw className={`w-5 h-5 text-accent-400 ${syncing ? 'animate-spin' : ''}`} />
+                            TMDb Data Sync
+                          </h3>
+                          <p className="text-gray-500 text-sm mt-1">Import contentMovies, contentSeries, actors, and genres from The Movie Database</p>
+                        </div>
+                      </div>
+
+                      {syncResult && (
+                        <div className={`mb-4 flex items-start gap-2 px-4 py-3 rounded-xl text-sm ${
+                          syncResult.ok
+                            ? 'bg-green-500/10 border border-green-500/30 text-green-400'
+                            : 'bg-red-500/10 border border-red-500/30 text-red-400'
+                        }`}>
+                          {syncResult.ok ? <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" /> : <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />}
+                          <span>{syncResult.message}</span>
+                        </div>
+                      )}
+
+                      <div className="flex flex-wrap gap-3">
+                        <button
+                          onClick={() => handleSync('sync_all')}
+                          disabled={syncing}
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent-600 hover:bg-accent-500 disabled:opacity-50 text-white font-medium text-sm transition-all"
+                        >
+                          {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                          Sync All (Movies + Series)
+                        </button>
+                        <button
+                          onClick={() => handleSync('sync_contentMovies')}
+                          disabled={syncing}
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-xl glass hover:bg-dark-700/50 disabled:opacity-50 text-gray-300 font-medium text-sm transition-all"
+                        >
+                          <Film className="w-4 h-4" />
+                          Sync Movies Only
+                        </button>
+                        <button
+                          onClick={() => handleSync('sync_contentSeries')}
+                          disabled={syncing}
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-xl glass hover:bg-dark-700/50 disabled:opacity-50 text-gray-300 font-medium text-sm transition-all"
+                        >
+                          <Tv className="w-4 h-4" />
+                          Sync Series Only
+                        </button>
+                        <button
+                          onClick={() => handleSync('sync_genres')}
+                          disabled={syncing}
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-xl glass hover:bg-dark-700/50 disabled:opacity-50 text-gray-300 font-medium text-sm transition-all"
+                        >
+                          <BarChart3 className="w-4 h-4" />
+                          Sync Genres
+                        </button>
+                      </div>
+                      <p className="text-gray-600 text-xs mt-3">
+                        Note: Requires TMDB_API_KEY edge function secret to be configured. The sync will import popular and top-rated content with posters, backdrops, trailers, cast, and crew.
+                      </p>
+                    </div>
+
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       <StatCard label="Total Users" value="124.3K" change="+12%" positive={true} icon={Users} color="blue" />
                       <StatCard label="Active Users" value="18.7K" change="+8%" positive={true} icon={Activity} color="green" />
@@ -150,9 +269,9 @@ export default function AdminDashboard() {
                     {/* Quick stats */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {[
-                        { label: 'Total Movies', value: movies.length, icon: Film, color: 'text-accent-400' },
-                        { label: 'Total Series', value: series.length, icon: Tv, color: 'text-blue-400' },
-                        { label: 'Total Clips', value: clips.length, icon: Video, color: 'text-green-400' },
+                        { label: 'Total Movies', value: stats.contentMovies, icon: Film, color: 'text-accent-400' },
+                        { label: 'Total Series', value: stats.contentSeries, icon: Tv, color: 'text-blue-400' },
+                        { label: 'Total Clips', value: stats.contentClips, icon: Video, color: 'text-green-400' },
                         { label: 'Open Tickets', value: 12, icon: Headphones, color: 'text-amber-400' },
                       ].map(item => (
                         <div key={item.label} className="glass rounded-xl p-4 flex items-center gap-3">
@@ -172,7 +291,7 @@ export default function AdminDashboard() {
                   <div className="space-y-5">
                     {/* Tabs */}
                     <div className="flex items-center gap-2">
-                      {(['movies', 'series', 'clips', 'actors'] as const).map(type => (
+                      {(['contentMovies', 'contentSeries', 'contentClips', 'actors'] as const).map(type => (
                         <button
                           key={type}
                           onClick={() => setContentType(type)}
@@ -203,7 +322,7 @@ export default function AdminDashboard() {
 
                     {/* Content list */}
                     <div className="space-y-2">
-                      {contentType === 'movies' && movies.filter(m => !searchQuery || m.title.toLowerCase().includes(searchQuery.toLowerCase())).map((movie) => (
+                      {contentType === 'contentMovies' && contentMovies.filter(m => !searchQuery || m.title.toLowerCase().includes(searchQuery.toLowerCase())).map((movie) => (
                         <div key={movie.id} className="flex items-center gap-4 p-4 glass rounded-xl hover:border-accent-500/20 transition-all">
                           <img src={movie.poster} alt={movie.title} className="w-12 h-16 rounded-lg object-cover flex-shrink-0" />
                           <div className="flex-1 min-w-0">
@@ -224,7 +343,7 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                       ))}
-                      {contentType === 'series' && series.map((s) => (
+                      {contentType === 'contentSeries' && contentSeries.map((s) => (
                         <div key={s.id} className="flex items-center gap-4 p-4 glass rounded-xl hover:border-accent-500/20 transition-all">
                           <img src={s.poster} alt={s.title} className="w-12 h-16 rounded-lg object-cover flex-shrink-0" />
                           <div className="flex-1 min-w-0">
@@ -245,7 +364,7 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                       ))}
-                      {contentType === 'clips' && clips.map((clip) => (
+                      {contentType === 'contentClips' && contentClips.map((clip) => (
                         <div key={clip.id} className="flex items-center gap-4 p-4 glass rounded-xl hover:border-accent-500/20 transition-all">
                           <img src={clip.thumbnail} alt={clip.title} className="w-16 h-10 rounded-lg object-cover flex-shrink-0" />
                           <div className="flex-1 min-w-0">
@@ -442,7 +561,7 @@ export default function AdminDashboard() {
                       <h3 className="text-white font-semibold mb-4">Recent Announcements</h3>
                       <div className="space-y-3">
                         {[
-                          { title: 'New content added: 15 movies this week', sent: '2 days ago', reach: '124K users' },
+                          { title: 'New content added: 15 contentMovies this week', sent: '2 days ago', reach: '124K users' },
                           { title: 'Scheduled maintenance - Sunday 2AM', sent: '1 week ago', reach: '124K users' },
                           { title: 'Ramadan special content now available', sent: '2 weeks ago', reach: '124K users' },
                         ].map(ann => (
@@ -471,7 +590,7 @@ export default function AdminDashboard() {
                           Most Watched
                         </h3>
                         <div className="space-y-3">
-                          {movies.slice(0, 5).map((movie, i) => (
+                          {contentMovies.slice(0, 5).map((movie, i) => (
                             <div key={movie.id} className="flex items-center gap-3">
                               <span className="text-gray-600 text-sm w-4">{i + 1}</span>
                               <img src={movie.poster} alt={movie.title} className="w-8 h-10 rounded object-cover flex-shrink-0" />
@@ -494,7 +613,7 @@ export default function AdminDashboard() {
                           Most Saved
                         </h3>
                         <div className="space-y-3">
-                          {movies.slice(2, 7).map((movie, i) => (
+                          {contentMovies.slice(2, 7).map((movie, i) => (
                             <div key={movie.id} className="flex items-center gap-3">
                               <span className="text-gray-600 text-sm w-4">{i + 1}</span>
                               <img src={movie.poster} alt={movie.title} className="w-8 h-10 rounded object-cover flex-shrink-0" />
@@ -517,7 +636,7 @@ export default function AdminDashboard() {
                           Most Discussed
                         </h3>
                         <div className="space-y-3">
-                          {movies.slice(1, 6).map((movie, i) => (
+                          {contentMovies.slice(1, 6).map((movie, i) => (
                             <div key={movie.id} className="flex items-center gap-3">
                               <span className="text-gray-600 text-sm w-4">{i + 1}</span>
                               <img src={movie.poster} alt={movie.title} className="w-8 h-10 rounded object-cover flex-shrink-0" />
@@ -540,7 +659,7 @@ export default function AdminDashboard() {
                           Most Shared
                         </h3>
                         <div className="space-y-3">
-                          {movies.slice(0, 5).reverse().map((movie, i) => (
+                          {contentMovies.slice(0, 5).reverse().map((movie, i) => (
                             <div key={movie.id} className="flex items-center gap-3">
                               <span className="text-gray-600 text-sm w-4">{i + 1}</span>
                               <img src={movie.poster} alt={movie.title} className="w-8 h-10 rounded object-cover flex-shrink-0" />

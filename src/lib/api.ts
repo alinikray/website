@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 import type {
   Movie, MovieWithRelations, MovieStream, MovieDownload,
   Subtitle, ExploreClip, ExploreClipWithMovie, ContinueWatchingItem,
-  Genre, Comment, Profile,
+  Genre, Comment, Profile, Series, Episode,
 } from './database.types';
 
 // ============ MOVIES ============
@@ -337,4 +337,119 @@ export async function getSubscriptionPlans() {
     .order('sort_order');
   if (error || !data) return [];
   return data;
+}
+
+// ============ SERIES ============
+
+export async function getSeries(limit = 20, offset = 0): Promise<Series[]> {
+  const { data, error } = await supabase
+    .from('series')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+  if (error || !data) return [];
+  return data as Series[];
+}
+
+export async function getSeriesBySlug(slug: string): Promise<Series | null> {
+  const { data, error } = await supabase
+    .from('series')
+    .select('*')
+    .eq('slug', slug)
+    .maybeSingle();
+  if (error || !data) return null;
+  return data as Series;
+}
+
+export async function getSeriesById(id: string): Promise<Series | null> {
+  const { data, error } = await supabase
+    .from('series')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  if (error || !data) return null;
+  return data as Series;
+}
+
+export async function getEpisodesBySeries(seriesId: string): Promise<Episode[]> {
+  const { data, error } = await supabase
+    .from('episodes')
+    .select('*')
+    .eq('series_id', seriesId)
+    .order('season_number', { ascending: true })
+    .order('episode_number', { ascending: true });
+  if (error || !data) return [];
+  return data as Episode[];
+}
+
+export async function getSimilarSeries(seriesId: string, limit = 10): Promise<Series[]> {
+  const { data: genreLinks } = await supabase
+    .from('series_genres')
+    .select('genre_id')
+    .eq('series_id', seriesId);
+  if (!genreLinks || genreLinks.length === 0) return [];
+
+  const genreIds = genreLinks.map(g => g.genre_id);
+  const { data: seriesLinks } = await supabase
+    .from('series_genres')
+    .select('series_id')
+    .in('genre_id', genreIds)
+    .neq('series_id', seriesId)
+    .limit(limit * 2);
+  if (!seriesLinks || seriesLinks.length === 0) return [];
+
+  const seriesIds = [...new Set(seriesLinks.map(s => s.series_id))].slice(0, limit);
+  const { data: series } = await supabase
+    .from('series')
+    .select('*')
+    .in('id', seriesIds);
+  return (series as Series[]) ?? [];
+}
+
+export async function searchSeries(query: string, limit = 20): Promise<Series[]> {
+  const { data, error } = await supabase
+    .from('series')
+    .select('*')
+    .or(`title_en.ilike.%${query}%,title_fa.ilike.%${query}%`)
+    .limit(limit);
+  if (error || !data) return [];
+  return data as Series[];
+}
+
+export async function getSeriesGenres(seriesId: string): Promise<Genre[]> {
+  const { data: links } = await supabase
+    .from('series_genres')
+    .select('genre_id')
+    .eq('series_id', seriesId);
+  if (!links || links.length === 0) return [];
+
+  const genreIds = links.map(l => l.genre_id);
+  const { data: genres } = await supabase
+    .from('genres')
+    .select('*')
+    .in('id', genreIds);
+  return (genres as Genre[]) ?? [];
+}
+
+// ============ TMDb SYNC ============
+
+export async function triggerTmdbSync(action: string = 'sync_all'): Promise<{ ok: boolean; data?: any; error?: string }> {
+  try {
+    const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tmdb-sync?action=${action}`;
+    const response = await fetch(functionUrl, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      return { ok: false, error: `HTTP ${response.status}: ${text}` };
+    }
+    const data = await response.json();
+    return { ok: true, data };
+  } catch (err: any) {
+    return { ok: false, error: err.message };
+  }
 }
