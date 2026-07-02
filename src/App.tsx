@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
+import MoviesPage from './pages/MoviesPage';
+import SeriesPage from './pages/SeriesPage';
 import MovieDetailPage from './pages/MovieDetailPage';
 import SeriesDetailPage from './pages/SeriesDetailPage';
 import SearchPage from './pages/SearchPage';
@@ -30,6 +32,8 @@ function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/movies" element={<MoviesPage />} />
+          <Route path="/series" element={<SeriesPage />} />
           <Route path="/movie/:id" element={<MovieDetailPage />} />
           <Route path="/watch/:movieSlug" element={<WatchPage />} />
           <Route path="/series/:id" element={<SeriesDetailPage />} />

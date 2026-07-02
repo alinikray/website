@@ -1,12 +1,33 @@
 import { tmdbProxy } from './api';
 import type { Movie } from '../types';
 
+export interface TmdbSeries {
+  id: string;
+  name: string;
+  originalName: string;
+  overview: string;
+  poster: string;
+  backdrop: string;
+  rating: number;
+  firstAirDate: string;
+  year: number;
+  genres: string[];
+  language: string;
+}
+
 const TMDB_GENRE_MAP: Record<number, string> = {
   28: 'Action', 12: 'Adventure', 16: 'Animation', 35: 'Comedy',
   80: 'Crime', 99: 'Documentary', 18: 'Drama', 10751: 'Family',
   14: 'Fantasy', 36: 'History', 27: 'Horror', 10402: 'Music',
   9648: 'Mystery', 10749: 'Romance', 878: 'Sci-Fi', 53: 'Thriller',
   10752: 'War', 37: 'Western',
+};
+
+const TV_GENRE_MAP: Record<number, string> = {
+  10759: 'Action & Adventure', 16: 'Animation', 35: 'Comedy', 80: 'Crime',
+  99: 'Documentary', 18: 'Drama', 10751: 'Family', 10762: 'Kids',
+  9648: 'Mystery', 10763: 'News', 10764: 'Reality', 10765: 'Sci-Fi & Fantasy',
+  10766: 'Soap', 10767: 'Talk', 10768: 'War & Politics', 37: 'Western',
 };
 
 const IMG = 'https://image.tmdb.org/t/p';
@@ -35,6 +56,22 @@ function mapRaw(m: any): Movie {
   };
 }
 
+function mapRawSeries(s: any): TmdbSeries {
+  return {
+    id: String(s.id),
+    name: s.name || s.original_name || '',
+    originalName: s.original_name || '',
+    overview: s.overview || '',
+    poster: s.poster_path ? `${IMG}/w342${s.poster_path}` : '',
+    backdrop: s.backdrop_path ? `${IMG}/w1280${s.backdrop_path}` : '',
+    rating: s.vote_average || 0,
+    firstAirDate: s.first_air_date || '',
+    year: s.first_air_date ? parseInt(s.first_air_date.substring(0, 4)) : 0,
+    genres: (s.genre_ids || []).map((id: number) => TV_GENRE_MAP[id]).filter(Boolean),
+    language: s.original_language || '',
+  };
+}
+
 export async function fetchPopularMovies(page = 1): Promise<Movie[]> {
   try {
     const data = await tmdbProxy('/movie/popular', { page: String(page) });
@@ -59,6 +96,38 @@ export async function fetchTopRatedMovies(page = 1): Promise<Movie[]> {
     return (data.results || []).map(mapRaw);
   } catch {
     return [];
+  }
+}
+
+export async function fetchDiscoverMovies(page = 1): Promise<{ results: Movie[]; totalPages: number }> {
+  try {
+    const data = await tmdbProxy('/discover/movie', {
+      sort_by: 'primary_release_date.desc',
+      include_adult: 'false',
+      page: String(page),
+    });
+    return {
+      results: (data.results || []).map(mapRaw),
+      totalPages: data.total_pages || 1,
+    };
+  } catch {
+    return { results: [], totalPages: 1 };
+  }
+}
+
+export async function fetchDiscoverSeries(page = 1): Promise<{ results: TmdbSeries[]; totalPages: number }> {
+  try {
+    const data = await tmdbProxy('/discover/tv', {
+      sort_by: 'first_air_date.desc',
+      include_adult: 'false',
+      page: String(page),
+    });
+    return {
+      results: (data.results || []).map(mapRawSeries),
+      totalPages: data.total_pages || 1,
+    };
+  } catch {
+    return { results: [], totalPages: 1 };
   }
 }
 
@@ -106,3 +175,4 @@ export async function fetchSimilarMovies(tmdbId: string): Promise<Movie[]> {
     return [];
   }
 }
+

@@ -85,8 +85,8 @@ export default function Header() {
 
   const navItems = [
     { path: '/', label: 'Home', icon: Home },
-    { path: '/search?type=movies', label: 'Movies', icon: Film },
-    { path: '/search?type=series', label: 'Series', icon: Tv },
+    { path: '/movies', label: 'Movies', icon: Film },
+    { path: '/series', label: 'Series', icon: Tv },
     { path: '/explore', label: 'Explore', icon: Compass, highlight: true },
   ];
 
