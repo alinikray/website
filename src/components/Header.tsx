@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Menu, X, User, Film, Tv, Home, Compass,
   Bookmark, ChevronDown, Crown, Settings, LogIn,
-  Bell, Clock, TrendingUp, Star
+  Bell, Clock, TrendingUp, Star, Trophy, Award,
+  List, Globe, ChevronRight
 } from 'lucide-react';
 
 const trendingSearches = ['The Golden Cage', 'Night Watch', 'Shahrazad', 'Asghar Farhadi', 'Desert Wind'];
@@ -17,6 +18,202 @@ const mockNotifications = [
   { id: 3, text: 'Your watchlist item "Desert Wind" is trending', time: '2d ago', unread: false },
 ];
 
+// ─── Mega Menu data ───────────────────────────────────────────────────────────
+
+const megaMenuColumns = [
+  {
+    heading: 'بخش‌ها',
+    headingEn: 'Sections',
+    items: [
+      { label: 'فیلم‌ها', labelEn: 'Movies', path: '/movies', icon: Film },
+      { label: 'سریال‌ها', labelEn: 'Series', path: '/series', icon: Tv },
+      { label: 'باکس آفیس', labelEn: 'Box Office', path: '/movies?sort=box_office', icon: Trophy },
+      { label: 'برندگان اسکار', labelEn: 'Oscar Winners', path: '/movies?sort=oscar', icon: Award },
+    ],
+  },
+  {
+    heading: 'ژانر فیلم',
+    headingEn: 'Movie Genres',
+    items: [
+      { label: 'اکشن', labelEn: 'Action', path: '/movies?genre=Action', icon: Film },
+      { label: 'درام', labelEn: 'Drama', path: '/movies?genre=Drama', icon: Film },
+      { label: 'انیمیشن', labelEn: 'Animation', path: '/movies?genre=Animation', icon: Film },
+      { label: 'فیلم هندی', labelEn: 'Bollywood', path: '/movies?genre=Bollywood', icon: Globe },
+      { label: 'لیست کاربران', labelEn: 'User Lists', path: '/watchlist', icon: List },
+    ],
+  },
+  {
+    heading: 'ژانر سریال',
+    headingEn: 'Series Genres',
+    items: [
+      { label: '۲۵۰ سریال برتر', labelEn: 'Top 250 Series', path: '/series?sort=top', icon: Star },
+      { label: '۲۵۰ فیلم برتر', labelEn: 'Top 250 Movies', path: '/movies?sort=top', icon: Star },
+      { label: 'سریال دوبله', labelEn: 'Dubbed Series', path: '/series?lang=fa', icon: Tv },
+      { label: 'سریال کره‌ای', labelEn: 'Korean Series', path: '/series?country=KR', icon: Globe },
+    ],
+  },
+];
+
+// ─── MegaMenu component ───────────────────────────────────────────────────────
+
+function MegaMenu({ onClose }: { onClose: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.18, ease: 'easeOut' }}
+      className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[680px] z-50"
+      style={{ filter: 'drop-shadow(0 24px 48px rgba(0,0,0,0.6))' }}
+    >
+      {/* Arrow indicator */}
+      <div className="flex justify-center mb-[-1px] relative z-10">
+        <div className="w-3 h-3 rotate-45 bg-[#0d0e16] border-t border-l border-violet-500/20" />
+      </div>
+
+      <div
+        className="rounded-2xl overflow-hidden border border-violet-500/20"
+        style={{ background: '#0d0e16' }}
+      >
+        {/* Top accent bar */}
+        <div className="h-[2px] bg-gradient-to-r from-transparent via-violet-500/60 to-transparent" />
+
+        <div className="grid grid-cols-3 divide-x divide-white/5 p-6 gap-0">
+          {megaMenuColumns.map((col, colIdx) => (
+            <div
+              key={col.heading}
+              className={`${colIdx === 0 ? 'pr-6' : colIdx === 1 ? 'px-6' : 'pl-6'}`}
+            >
+              {/* Column heading */}
+              <div className="mb-4">
+                <p
+                  className="text-[11px] font-semibold tracking-widest uppercase text-violet-400/70 mb-0.5"
+                  style={{ direction: 'rtl' }}
+                >
+                  {col.heading}
+                </p>
+                <p className="text-[10px] text-gray-600 tracking-wider">{col.headingEn}</p>
+              </div>
+
+              {/* Items */}
+              <ul className="space-y-0.5">
+                {col.items.map((item, itemIdx) => (
+                  <motion.li
+                    key={item.path}
+                    initial={{ opacity: 0, x: -6 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.04 + colIdx * 0.04 + itemIdx * 0.03, duration: 0.15 }}
+                  >
+                    <Link
+                      to={item.path}
+                      onClick={onClose}
+                      className="group flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-150 hover:bg-violet-500/10 hover:border-violet-500/20 border border-transparent"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-7 h-7 rounded-lg bg-white/5 group-hover:bg-violet-500/20 flex items-center justify-center flex-shrink-0 transition-colors duration-150">
+                          <item.icon className="w-3.5 h-3.5 text-gray-500 group-hover:text-violet-400 transition-colors duration-150" />
+                        </div>
+                        <div className="min-w-0">
+                          <p
+                            className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors duration-150 leading-tight truncate"
+                            style={{ direction: 'rtl' }}
+                          >
+                            {item.label}
+                          </p>
+                          <p className="text-[10px] text-gray-600 group-hover:text-gray-400 transition-colors duration-150 leading-tight mt-0.5">
+                            {item.labelEn}
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronRight className="w-3.5 h-3.5 text-gray-700 group-hover:text-violet-400 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-1 group-hover:translate-x-0" />
+                    </Link>
+                  </motion.li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer bar */}
+        <div className="border-t border-white/5 px-6 py-3 flex items-center justify-between bg-white/[0.02]">
+          <p className="text-xs text-gray-600">Fynex Movies · فینکس موویز</p>
+          <Link
+            to="/movies"
+            onClick={onClose}
+            className="flex items-center gap-1.5 text-xs text-violet-400 hover:text-violet-300 transition-colors font-medium"
+          >
+            Browse all content
+            <ChevronRight className="w-3 h-3" />
+          </Link>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Mobile Mega Menu (expandable) ───────────────────────────────────────────
+
+function MobileMegaMenu({ onClose }: { onClose: () => void }) {
+  const [openCol, setOpenCol] = useState<number | null>(null);
+
+  return (
+    <div className="border-t border-violet-500/10 mt-1 pt-2">
+      {megaMenuColumns.map((col, colIdx) => (
+        <div key={col.heading} className="mb-1">
+          <button
+            onClick={() => setOpenCol(openCol === colIdx ? null : colIdx)}
+            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all"
+          >
+            <span
+              className="text-sm font-semibold text-violet-300"
+              style={{ direction: 'rtl' }}
+            >
+              {col.heading}
+            </span>
+            <ChevronDown
+              className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${openCol === colIdx ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          <AnimatePresence>
+            {openCol === colIdx && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2, ease: 'easeInOut' }}
+                className="overflow-hidden"
+              >
+                <div className="pl-4 pr-2 pb-2 space-y-0.5">
+                  {col.items.map((item) => (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={onClose}
+                      className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-violet-500/10 transition-all"
+                    >
+                      <item.icon className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                      <span
+                        className="text-sm font-medium flex-1"
+                        style={{ direction: 'rtl' }}
+                      >
+                        {item.label}
+                      </span>
+                      <span className="text-[10px] text-gray-600">{item.labelEn}</span>
+                    </Link>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Main Header ──────────────────────────────────────────────────────────────
+
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -25,7 +222,13 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState(mockNotifications);
+  const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
+  const [isMobileMegaOpen, setIsMobileMegaOpen] = useState(false);
+
   const notifRef = useRef<HTMLDivElement>(null);
+  const megaMenuRef = useRef<HTMLDivElement>(null);
+  const megaHoverTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -40,12 +243,17 @@ export default function Header() {
   useEffect(() => {
     setIsMobileMenuOpen(false);
     setIsSearchOpen(false);
+    setIsMegaMenuOpen(false);
+    setIsMobileMegaOpen(false);
   }, [location]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
         setShowNotifications(false);
+      }
+      if (megaMenuRef.current && !megaMenuRef.current.contains(e.target as Node)) {
+        setIsMegaMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -54,7 +262,11 @@ export default function Header() {
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { setIsSearchOpen(false); setShowNotifications(false); }
+      if (e.key === 'Escape') {
+        setIsSearchOpen(false);
+        setShowNotifications(false);
+        setIsMegaMenuOpen(false);
+      }
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setIsSearchOpen(true); }
     };
     window.addEventListener('keydown', handleKey);
@@ -79,16 +291,25 @@ export default function Header() {
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
-    if (path.startsWith('/search')) return location.pathname === '/search';
-    return location.pathname.startsWith(path);
+    return location.pathname.startsWith(path.split('?')[0]);
   };
 
-  const navItems = [
-    { path: '/', label: 'Home', icon: Home },
-    { path: '/movies', label: 'Movies', icon: Film },
-    { path: '/series', label: 'Series', icon: Tv },
-    { path: '/explore', label: 'Explore', icon: Compass, highlight: true },
-  ];
+  const handleMoviesMouseEnter = () => {
+    if (megaHoverTimeout.current) clearTimeout(megaHoverTimeout.current);
+    setIsMegaMenuOpen(true);
+  };
+
+  const handleMoviesMouseLeave = () => {
+    megaHoverTimeout.current = setTimeout(() => setIsMegaMenuOpen(false), 120);
+  };
+
+  const handleMegaMenuMouseEnter = () => {
+    if (megaHoverTimeout.current) clearTimeout(megaHoverTimeout.current);
+  };
+
+  const handleMegaMenuMouseLeave = () => {
+    megaHoverTimeout.current = setTimeout(() => setIsMegaMenuOpen(false), 120);
+  };
 
   return (
     <>
@@ -119,31 +340,82 @@ export default function Header() {
 
               {/* Desktop Navigation */}
               <nav className="hidden md:flex items-center gap-1">
-                {navItems.map((item) => {
-                  const active = isActive(item.path);
-                  const isExplore = item.highlight;
-                  return (
-                    <Link
-                      key={item.label}
-                      to={item.path}
-                      className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        active
-                          ? isExplore
-                            ? 'text-white bg-accent-600'
-                            : 'text-white bg-dark-800/70'
-                          : isExplore
-                            ? 'text-accent-400 hover:text-white hover:bg-accent-600/30'
-                            : 'text-gray-400 hover:text-white hover:bg-dark-800/30'
-                      }`}
-                    >
-                      <item.icon className="w-4 h-4" />
-                      {item.label}
-                      {isExplore && !active && (
-                        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-accent-400 animate-pulse" />
+                {/* Home */}
+                <Link
+                  to="/"
+                  className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    isActive('/') && location.pathname === '/'
+                      ? 'text-white bg-dark-800/70'
+                      : 'text-gray-400 hover:text-white hover:bg-dark-800/30'
+                  }`}
+                >
+                  <Home className="w-4 h-4" />
+                  Home
+                </Link>
+
+                {/* Movies — with mega menu trigger */}
+                <div
+                  ref={megaMenuRef}
+                  className="relative"
+                  onMouseEnter={handleMoviesMouseEnter}
+                  onMouseLeave={handleMoviesMouseLeave}
+                >
+                  <Link
+                    to="/movies"
+                    className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 select-none ${
+                      isActive('/movies')
+                        ? 'text-white bg-dark-800/70'
+                        : 'text-gray-400 hover:text-white hover:bg-dark-800/30'
+                    } ${isMegaMenuOpen ? 'text-white bg-dark-800/50' : ''}`}
+                  >
+                    <Film className="w-4 h-4" />
+                    Movies
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 ml-0.5 transition-transform duration-200 ${isMegaMenuOpen ? 'rotate-180 text-violet-400' : 'text-gray-600'}`}
+                    />
+                  </Link>
+
+                  {/* Mega Menu (desktop) */}
+                  <div
+                    onMouseEnter={handleMegaMenuMouseEnter}
+                    onMouseLeave={handleMegaMenuMouseLeave}
+                  >
+                    <AnimatePresence>
+                      {isMegaMenuOpen && (
+                        <MegaMenu onClose={() => setIsMegaMenuOpen(false)} />
                       )}
-                    </Link>
-                  );
-                })}
+                    </AnimatePresence>
+                  </div>
+                </div>
+
+                {/* Series */}
+                <Link
+                  to="/series"
+                  className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    isActive('/series')
+                      ? 'text-white bg-dark-800/70'
+                      : 'text-gray-400 hover:text-white hover:bg-dark-800/30'
+                  }`}
+                >
+                  <Tv className="w-4 h-4" />
+                  Series
+                </Link>
+
+                {/* Explore */}
+                <Link
+                  to="/explore"
+                  className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    isActive('/explore')
+                      ? 'text-white bg-accent-600'
+                      : 'text-accent-400 hover:text-white hover:bg-accent-600/30'
+                  }`}
+                >
+                  <Compass className="w-4 h-4" />
+                  Explore
+                  {!isActive('/explore') && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-accent-400 animate-pulse" />
+                  )}
+                </Link>
               </nav>
             </div>
 
@@ -292,7 +564,6 @@ export default function Header() {
             className="fixed inset-0 z-[100] bg-dark-900/98 backdrop-blur-xl"
           >
             <div className="max-w-3xl mx-auto px-4 pt-16 md:pt-24">
-              {/* Close button */}
               <button
                 onClick={() => setIsSearchOpen(false)}
                 className="absolute top-4 right-4 md:top-6 md:right-6 p-2 rounded-lg hover:bg-dark-800 text-gray-400 hover:text-white transition-all"
@@ -306,7 +577,6 @@ export default function Header() {
                 exit={{ y: -20, opacity: 0 }}
                 transition={{ delay: 0.05 }}
               >
-                {/* Category tabs */}
                 <div className="flex items-center gap-2 mb-4">
                   {searchCategories.map(cat => (
                     <button
@@ -323,7 +593,6 @@ export default function Header() {
                   ))}
                 </div>
 
-                {/* Search input */}
                 <form onSubmit={handleSearch} className="relative mb-6">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-500" />
                   <input
@@ -345,7 +614,6 @@ export default function Header() {
                   )}
                 </form>
 
-                {/* Instant suggestions when typing */}
                 {searchQuery.length > 1 && (
                   <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-xl mb-6 overflow-hidden">
                     {['The Last Stand', 'The Capital', 'The Golden Cage'].filter(t => t.toLowerCase().includes(searchQuery.toLowerCase())).map(suggestion => (
@@ -363,7 +631,6 @@ export default function Header() {
 
                 {!searchQuery && (
                   <div className="space-y-6">
-                    {/* Trending */}
                     <div>
                       <div className="flex items-center gap-2 mb-3">
                         <TrendingUp className="w-4 h-4 text-accent-400" />
@@ -382,7 +649,6 @@ export default function Header() {
                       </div>
                     </div>
 
-                    {/* Recent */}
                     <div>
                       <div className="flex items-center gap-2 mb-3">
                         <Clock className="w-4 h-4 text-gray-500" />
@@ -423,30 +689,82 @@ export default function Header() {
             className="fixed top-16 left-0 right-0 z-40 md:hidden bg-dark-900/95 backdrop-blur-xl border-t border-dark-800"
           >
             <nav className="py-4 px-4 space-y-1">
-              {navItems.map((item) => {
-                const active = isActive(item.path);
-                const isExplore = item.highlight;
-                return (
-                  <Link
-                    key={item.label}
-                    to={item.path}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                      active
-                        ? 'text-white bg-accent-600/20 border border-accent-500/20'
-                        : isExplore
-                          ? 'text-accent-400 hover:bg-accent-600/20'
-                          : 'text-gray-400 hover:text-white hover:bg-dark-800'
-                    }`}
-                  >
-                    <item.icon className="w-5 h-5" />
-                    <span className="font-medium">{item.label}</span>
-                    {isExplore && !active && (
-                      <span className="ml-auto px-2 py-0.5 rounded-full bg-accent-600/30 text-accent-400 text-xs">New</span>
-                    )}
-                  </Link>
-                );
-              })}
+              {/* Home */}
+              <Link
+                to="/"
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                  location.pathname === '/'
+                    ? 'text-white bg-accent-600/20 border border-accent-500/20'
+                    : 'text-gray-400 hover:text-white hover:bg-dark-800'
+                }`}
+              >
+                <Home className="w-5 h-5" />
+                <span className="font-medium">Home</span>
+              </Link>
+
+              {/* Movies with mobile mega menu toggle */}
+              <div>
+                <button
+                  onClick={() => setIsMobileMegaOpen(v => !v)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                    isActive('/movies')
+                      ? 'text-white bg-accent-600/20 border border-accent-500/20'
+                      : 'text-gray-400 hover:text-white hover:bg-dark-800'
+                  }`}
+                >
+                  <Film className="w-5 h-5" />
+                  <span className="font-medium flex-1 text-left">Movies</span>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-200 ${isMobileMegaOpen ? 'rotate-180 text-violet-400' : ''}`}
+                  />
+                </button>
+
+                <AnimatePresence>
+                  {isMobileMegaOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.22, ease: 'easeInOut' }}
+                      className="overflow-hidden"
+                    >
+                      <MobileMegaMenu onClose={() => { setIsMobileMegaOpen(false); setIsMobileMenuOpen(false); }} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Series */}
+              <Link
+                to="/series"
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                  isActive('/series')
+                    ? 'text-white bg-accent-600/20 border border-accent-500/20'
+                    : 'text-gray-400 hover:text-white hover:bg-dark-800'
+                }`}
+              >
+                <Tv className="w-5 h-5" />
+                <span className="font-medium">Series</span>
+              </Link>
+
+              {/* Explore */}
+              <Link
+                to="/explore"
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                  isActive('/explore')
+                    ? 'text-white bg-accent-600/20 border border-accent-500/20'
+                    : 'text-accent-400 hover:bg-accent-600/20'
+                }`}
+              >
+                <Compass className="w-5 h-5" />
+                <span className="font-medium">Explore</span>
+                {!isActive('/explore') && (
+                  <span className="ml-auto px-2 py-0.5 rounded-full bg-accent-600/30 text-accent-400 text-xs">New</span>
+                )}
+              </Link>
+
               <div className="h-px bg-dark-800 my-2" />
+
               <Link to="/subscription" className="flex items-center gap-3 px-4 py-3 rounded-xl text-amber-400 hover:bg-amber-500/10 transition-all">
                 <Crown className="w-5 h-5" />
                 <span className="font-medium">Premium Plans</span>
