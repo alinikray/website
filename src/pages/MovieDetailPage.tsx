@@ -9,6 +9,7 @@ import {
   Info
 } from 'lucide-react';
 import { getMovieById, getSimilarMovies, getMovieGenres, getClipsByMovie } from '../lib/api';
+import { fetchMovieDetails, fetchSimilarMovies } from '../lib/tmdbService';
 import { mapDbMovieToMovie, mapDbActorToCastMember } from '../lib/mappers';
 import { supabase } from '../lib/supabase';
 import type { Movie as DbMovie, Genre, ExploreClip, Actor } from '../lib/database.types';
@@ -92,58 +93,67 @@ export default function MovieDetailPage() {
     setLoading(true);
     (async () => {
       const dbMovie = await getMovieById(id);
-      if (!dbMovie) { setLoading(false); return; }
 
-      const [g, c, sim] = await Promise.all([
-        getMovieGenres(dbMovie.id),
-        getClipsByMovie(dbMovie.id),
-        getSimilarMovies(dbMovie.id),
-      ]);
+      if (dbMovie) {
+        // Supabase path
+        const [g, c, sim] = await Promise.all([
+          getMovieGenres(dbMovie.id),
+          getClipsByMovie(dbMovie.id),
+          getSimilarMovies(dbMovie.id),
+        ]);
 
-      // Fetch cast
-      const { data: castLinks } = await supabase
-        .from('movie_actors')
-        .select('actor_id, character_name')
-        .eq('movie_id', dbMovie.id)
-        .limit(12);
+        const { data: castLinks } = await supabase
+          .from('movie_actors')
+          .select('actor_id, character_name')
+          .eq('movie_id', dbMovie.id)
+          .limit(12);
 
-      let cast: CastMember[] = [];
-      if (castLinks?.length) {
-        const { data: actors } = await supabase
-          .from('actors')
-          .select('*')
-          .in('id', castLinks.map((l: any) => l.actor_id));
-        if (actors) {
-          cast = (castLinks as any[]).map((link: any) => {
-            const actor = (actors as Actor[]).find(a => a.id === link.actor_id);
-            return actor ? mapDbActorToCastMember(actor, link.character_name) : null;
-          }).filter((c): c is CastMember => c !== null);
-        }
-      }
-
-      // Fetch similar as mapped Movie[]
-      const simGenreMap: Record<string, Genre[]> = {};
-      if (sim.length > 0) {
-        const { data: sgLinks } = await supabase
-          .from('movie_genres')
-          .select('movie_id, genre_id')
-          .in('movie_id', sim.map(s => s.id));
-        if (sgLinks) {
-          for (const link of sgLinks as any[]) {
-            if (!simGenreMap[link.movie_id]) simGenreMap[link.movie_id] = [];
-            const found = g.find(gg => gg.id === link.genre_id);
-            if (found) simGenreMap[link.movie_id].push(found);
+        let cast: CastMember[] = [];
+        if (castLinks?.length) {
+          const { data: actors } = await supabase
+            .from('actors')
+            .select('*')
+            .in('id', castLinks.map((l: any) => l.actor_id));
+          if (actors) {
+            cast = (castLinks as any[]).map((link: any) => {
+              const actor = (actors as Actor[]).find(a => a.id === link.actor_id);
+              return actor ? mapDbActorToCastMember(actor, link.character_name) : null;
+            }).filter((c): c is CastMember => c !== null);
           }
         }
+
+        const simGenreMap: Record<string, Genre[]> = {};
+        if (sim.length > 0) {
+          const { data: sgLinks } = await supabase
+            .from('movie_genres')
+            .select('movie_id, genre_id')
+            .in('movie_id', sim.map(s => s.id));
+          if (sgLinks) {
+            for (const link of sgLinks as any[]) {
+              if (!simGenreMap[link.movie_id]) simGenreMap[link.movie_id] = [];
+              const found = g.find(gg => gg.id === link.genre_id);
+              if (found) simGenreMap[link.movie_id].push(found);
+            }
+          }
+        }
+
+        const mappedSimilar = (sim as DbMovie[]).map(m =>
+          mapDbMovieToMovie(m, simGenreMap[m.id] || [])
+        );
+
+        setMovie(mapDbMovieToMovie(dbMovie, g, cast));
+        setClips(c);
+        setSimilarMovies(mappedSimilar);
+      } else {
+        // TMDb fallback — id is a numeric TMDb ID (e.g. "533535")
+        const [tmdbMovie, similar] = await Promise.all([
+          fetchMovieDetails(id),
+          fetchSimilarMovies(id),
+        ]);
+        if (tmdbMovie) setMovie(tmdbMovie);
+        setSimilarMovies(similar);
       }
 
-      const mappedSimilar = (sim as DbMovie[]).map(m =>
-        mapDbMovieToMovie(m, simGenreMap[m.id] || [])
-      );
-
-      setMovie(mapDbMovieToMovie(dbMovie, g, cast));
-      setClips(c);
-      setSimilarMovies(mappedSimilar);
       setLoading(false);
     })();
   }, [id]);
