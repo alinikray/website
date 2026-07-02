@@ -36,7 +36,7 @@ export default function SearchPage() {
       const [moviesRes, seriesRes, genresRes] = await Promise.all([
         supabase.from('movies').select('*').eq('status', 'published').order('imdb_rating', { ascending: false }),
         supabase.from('series').select('*').order('imdb_rating', { ascending: false }),
-        supabase.from('genres').select('*').order('name_en'),
+        supabase.from('genres').select('*').order('name'),
       ]);
 
       const dbM = (moviesRes.data || []) as DbMovie[];
@@ -53,7 +53,7 @@ export default function SearchPage() {
           for (const link of mgLinks) {
             if (!movieGenreMap[link.movie_id]) movieGenreMap[link.movie_id] = [];
             const g = dbG.find(gg => gg.id === link.genre_id);
-            if (g) movieGenreMap[link.movie_id].push(g.name_en);
+            if (g) movieGenreMap[link.movie_id].push(g.name);
           }
         }
       }
@@ -68,14 +68,14 @@ export default function SearchPage() {
           for (const link of sgLinks) {
             if (!seriesGenreMap[link.series_id]) seriesGenreMap[link.series_id] = [];
             const g = dbG.find(gg => gg.id === link.genre_id);
-            if (g) seriesGenreMap[link.series_id].push(g.name_en);
+            if (g) seriesGenreMap[link.series_id].push(g.name);
           }
         }
       }
 
-      setDbMovies(dbM.map(m => mapDbMovieToMovie(m, dbG.filter(g => (movieGenreMap[m.id] || []).includes(g.name_en)))));
-      setDbSeries(dbS.map(s => mapDbSeriesToSeries(s, dbG.filter(g => (seriesGenreMap[s.id] || []).includes(g.name_en)))));
-      setDbGenres(dbG.map(g => g.name_en));
+      setDbMovies(dbM.map(m => mapDbMovieToMovie(m, dbG.filter(g => (movieGenreMap[m.id] || []).includes(g.name)))));
+      setDbSeries(dbS.map(s => mapDbSeriesToSeries(s, dbG.filter(g => (seriesGenreMap[s.id] || []).includes(g.name)))));
+      setDbGenres(dbG.map(g => g.name));
     })();
   }, []);
 

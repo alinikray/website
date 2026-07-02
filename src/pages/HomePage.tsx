@@ -38,7 +38,7 @@ export default function HomePage() {
             .select('*')
             .order('imdb_rating', { ascending: false })
             .limit(30),
-          supabase.from('genres').select('*').order('name_en'),
+          supabase.from('genres').select('*').order('name'),
         ]);
 
         const dbMovies = (moviesRes.data || []) as DbMovie[];
@@ -146,7 +146,7 @@ export default function HomePage() {
 
         <ContentRow title="Popular Movies" titlePersian="فیلم‌های محبوب" items={popularMovies} type="movie" />
         <ContentRow title="Popular Series" titlePersian="سریال‌های محبوب" items={popularSeries} type="series" />
-        <GenreSection genres={genres.map(g => g.name_en)} />
+        <GenreSection genres={genres.map(g => g.name)} />
         <DiscoverSection />
         <RecommendedRow />
         <ContentRow title="All Movies" titlePersian="همه فیلم‌ها" items={allMovies} type="movie" />
