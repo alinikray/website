@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase, isSupabaseConfigured } from './supabase';
 import type {
   Movie, MovieStream, MovieDownload,
   ExploreClip, ExploreClipWithMovie, ContinueWatchingItem,
@@ -278,6 +278,11 @@ export async function triggerTmdbSync(action = 'sync_all', pages?: number): Prom
 // ─── TMDb Proxy (secure client-side TMDb access) ──────────────────────────────
 
 export async function tmdbProxy(path: string, params: Record<string, string> = {}): Promise<any> {
+  // Without Supabase configured there is no proxy endpoint to hit. Bail out
+  // early so we don't fire failing requests — callers fall back to mock/empty data.
+  if (!isSupabaseConfigured) {
+    throw new Error('tmdb-proxy unavailable: Supabase is not configured.');
+  }
   const qs = new URLSearchParams({ path, ...params });
   const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tmdb-proxy?${qs}`;
   const res = await fetch(url, {
