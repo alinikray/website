@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import HeroBanner, { HeroSlide } from '../components/HeroBanner';
+import HeroBanner from '../components/HeroBanner';
+import type { HeroSlide } from '../components/HeroBanner';
 import ContentRow from '../components/ContentRow';
 import GenreSection from '../components/GenreSection';
 import ContinueWatching from '../components/ContinueWatching';
@@ -135,7 +136,8 @@ export default function HomePage() {
 
   return (
     <div className="pb-16">
-      {heroSlides.length > 0 && <HeroBanner slides={heroSlides} />}
+      {/* HeroBanner is self-contained with its own fallback; heroSlides is bonus data */}
+      <HeroBanner slides={heroSlides.length > 0 ? heroSlides : undefined} />
 
       <div className="mt-8 md:mt-12 space-y-10 md:space-y-16">
         <TrendingClipsRow />
