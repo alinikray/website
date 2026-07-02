@@ -56,8 +56,9 @@ export default function AuthPage() {
           setForgotSent(true);
         }
       }
-    } catch {
-      setErrorMsg('An unexpected error occurred. Please try again.');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : typeof err === 'string' ? err : 'An unexpected error occurred. Please try again.';
+      setErrorMsg(msg);
     }
     setIsLoading(false);
   };

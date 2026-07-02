@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error?.message ?? null };
+    return { error: error?.message || null };
   };
 
   const signUp = async (email: string, password: string, username?: string) => {
@@ -85,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email);
-    return { error: error?.message ?? null };
+    return { error: error?.message || null };
   };
 
   const updateProfile = async (updates: Partial<Profile>) => {
@@ -95,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .update(updates)
       .eq('id', user.id);
     if (!error) setProfile(prev => prev ? { ...prev, ...updates } : null);
-    return { error: error?.message ?? null };
+    return { error: error?.message || null };
   };
 
   return (
