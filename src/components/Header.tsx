@@ -322,16 +322,16 @@ export default function Header() {
             : 'bg-gradient-to-b from-dark-900/80 to-transparent'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-16 md:h-20">
-            <div className="flex items-center gap-4 md:gap-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6">
+          <div className="flex items-center justify-between h-14 md:h-20">
+            <div className="flex items-center gap-3 md:gap-8">
               {/* Logo */}
               <Link to="/" className="flex items-center gap-2 group">
                 <motion.div
                   whileHover={{ scale: 1.05 }}
-                  className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-500 to-accent-700 flex items-center justify-center shadow-lg shadow-accent-500/30"
+                  className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-accent-500 to-accent-700 flex items-center justify-center shadow-lg shadow-accent-500/30"
                 >
-                  <span className="text-white font-display text-lg">F</span>
+                  <span className="text-white font-display text-base md:text-lg">F</span>
                 </motion.div>
                 <span className="hidden sm:block text-xl font-bold text-white group-hover:text-accent-400 transition-colors">
                   Fynex Movies
@@ -420,7 +420,7 @@ export default function Header() {
             </div>
 
             {/* Right Section */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 md:gap-2">
               {/* Subscription Badge */}
               <Link
                 to="/subscription"
@@ -435,9 +435,9 @@ export default function Header() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsSearchOpen(true)}
-                className="p-2.5 rounded-lg bg-dark-800/50 hover:bg-dark-700/50 text-gray-400 hover:text-white transition-all"
+                className="p-2 md:p-2.5 rounded-lg bg-dark-800/50 hover:bg-dark-700/50 text-gray-400 hover:text-white transition-all"
               >
-                <Search className="w-5 h-5" />
+                <Search className="w-4 h-4 md:w-5 md:h-5" />
               </motion.button>
 
               {/* Notification Bell */}
@@ -446,11 +446,11 @@ export default function Header() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setShowNotifications(v => !v)}
-                  className="relative p-2.5 rounded-lg bg-dark-800/50 hover:bg-dark-700/50 text-gray-400 hover:text-white transition-all"
+                  className="relative p-2 md:p-2.5 rounded-lg bg-dark-800/50 hover:bg-dark-700/50 text-gray-400 hover:text-white transition-all"
                 >
-                  <Bell className="w-5 h-5" />
+                  <Bell className="w-4 h-4 md:w-5 md:h-5" />
                   {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-accent-600 text-white text-[10px] font-bold flex items-center justify-center leading-none">
+                    <span className="absolute top-1 right-1 min-w-[14px] h-3.5 px-0.5 rounded-full bg-accent-600 text-white text-[9px] font-bold flex items-center justify-center leading-none">
                       {unreadCount}
                     </span>
                   )}
@@ -496,10 +496,10 @@ export default function Header() {
               <div className="relative group">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
-                  className="flex items-center gap-2 p-1.5 pr-3 rounded-lg bg-dark-800/50 hover:bg-dark-700/50 transition-all"
+                  className="flex items-center gap-1.5 p-1 md:p-1.5 md:pr-3 rounded-lg bg-dark-800/50 hover:bg-dark-700/50 transition-all"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-500 to-accent-700 flex items-center justify-center">
-                    <User className="w-4 h-4 text-white" />
+                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-gradient-to-br from-accent-500 to-accent-700 flex items-center justify-center">
+                    <User className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" />
                   </div>
                   <ChevronDown className="w-4 h-4 text-gray-400 hidden sm:block" />
                 </motion.button>
@@ -686,7 +686,7 @@ export default function Header() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-16 left-0 right-0 z-40 md:hidden bg-dark-900/95 backdrop-blur-xl border-t border-dark-800"
+            className="fixed top-14 left-0 right-0 z-40 md:hidden bg-dark-900/95 backdrop-blur-xl border-t border-dark-800"
           >
             <nav className="py-4 px-4 space-y-1">
               {/* Home */}
@@ -787,7 +787,7 @@ export default function Header() {
       </AnimatePresence>
 
       {/* Spacer for fixed header */}
-      <div className="h-16 md:h-20" />
+      <div className="h-14 md:h-20" />
     </>
   );
 }
