@@ -5,9 +5,9 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true,
-    port: 5173
+    port: 5173,
+    allowedHosts: [
+      'sb-2b4462m7qe2d.vercel.run'
+    ]
   }
-  server.allowedHosts: {
-    sb-2b4462m7qe2d.vercel.run
-  {
 })
