@@ -371,13 +371,18 @@ export default function HeroBanner({ slides: propSlides }: HeroBannerProps) {
 
   if (!content) return <Skeleton />;
 
+  const sidebarSlides = slides.slice(0, 5);
+
   return (
-    <div
-      className="relative w-full overflow-hidden group"
-      style={{ height: 'clamp(540px, 80vh, 860px)' }}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-    >
+    <div className="relative w-full bg-dark-950">
+      <div className="flex flex-col lg:flex-row">
+        {/* ── Main Hero column (80%) ─────────────────────────────────────── */}
+        <div
+          className="relative w-full lg:w-4/5 overflow-hidden group"
+          style={{ height: 'clamp(540px, 80vh, 860px)' }}
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
       {/* ── Backdrop ──────────────────────────────────────────────────────── */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -435,7 +440,7 @@ export default function HeroBanner({ slides: propSlides }: HeroBannerProps) {
         </motion.div>
       </AnimatePresence>
 
-      {/* ── Hero Content ──────────────────────────────────────────────────── */}
+      {/* ── Hero Content ────────────────────────────────────────────���─────── */}
       <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end">
         <div className="w-full pb-16 sm:pb-20 md:pb-28 lg:pb-32">
           <AnimatePresence mode="wait">
@@ -670,6 +675,57 @@ export default function HeroBanner({ slides: propSlides }: HeroBannerProps) {
             className="w-1 h-1.5 rounded-full bg-accent-400/60"
           />
         </motion.div>
+      </div>
+        </div>
+
+        {/* ── Movie sidebar (20%) ──────────────────────────────────────────
+            Desktop: vertical selector. Mobile: horizontal scroll row below hero.
+            Reuses the existing `idx` slide state so clicks fade-transition the hero. */}
+        <aside className="w-full lg:w-1/5 bg-dark-950 flex lg:flex-col gap-3 p-3 sm:p-4 overflow-x-auto lg:overflow-x-hidden lg:overflow-y-auto">
+          {sidebarSlides.map((s, i) => {
+            const c = s.content;
+            const active = i === idx;
+            const thumb = c.backdrop || c.poster;
+            return (
+              <button
+                key={c.id}
+                onClick={() => setIdx(i)}
+                aria-label={`Show ${c.title}`}
+                aria-current={active}
+                className={`group/thumb relative shrink-0 w-40 lg:w-full lg:flex-1 aspect-video lg:aspect-auto lg:min-h-[70px] rounded-xl overflow-hidden transition-all duration-300 ${
+                  active
+                    ? 'scale-[1.03] ring-2 ring-[#7C3AED] shadow-[0_0_22px_rgba(124,58,237,0.55)]'
+                    : 'ring-1 ring-white/5 hover:ring-white/20'
+                }`}
+              >
+                {thumb ? (
+                  <img
+                    src={thumb}
+                    alt={c.title}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover/thumb:scale-110"
+                    draggable={false}
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-dark-800 to-dark-950" />
+                )}
+
+                {/* Dark overlay — lighter when active */}
+                <div
+                  className={`absolute inset-0 transition-colors duration-300 ${
+                    active ? 'bg-black/10' : 'bg-black/50 group-hover/thumb:bg-black/25'
+                  }`}
+                />
+
+                {/* Title overlay at bottom */}
+                <div className="absolute inset-x-0 bottom-0 p-2.5 bg-gradient-to-t from-black/85 via-black/40 to-transparent">
+                  <p className="text-white text-xs sm:text-sm font-semibold leading-tight line-clamp-1 text-left">
+                    {c.title}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
+        </aside>
       </div>
     </div>
   );
