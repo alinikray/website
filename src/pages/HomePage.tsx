@@ -13,9 +13,12 @@ import { mapDbMovieToMovie, mapDbSeriesToSeries } from '../lib/mappers';
 import { Movie, Series } from '../types';
 import type { Movie as DbMovie, Series as DbSeries, Genre } from '../lib/database.types';
 
+type BadgeType = 'trending' | 'editors-pick' | 'most-discussed' | 'new-release' | 'featured';
+interface HeroSlide { content: Movie | Series; badge?: BadgeType; }
+
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
-  const [featured, setFeatured] = useState<Movie | null>(null);
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
   const [popularMovies, setPopularMovies] = useState<Movie[]>([]);
   const [allMovies, setAllMovies] = useState<Movie[]>([]);
   const [popularSeries, setPopularSeries] = useState<Series[]>([]);
@@ -68,7 +71,17 @@ export default function HomePage() {
         const mappedMovies = dbMovies.map(m => mapDbMovieToMovie(m, movieGenreMap[m.id] || []));
         const mappedSeries = dbSeries.map(s => mapDbSeriesToSeries(s, seriesGenreMap[s.id] || []));
 
-        setFeatured(mappedMovies[0] || null);
+        // Build hero slides: top 3 movies + top 2 series, with varied badges
+        const BADGE_SEQUENCE: BadgeType[] = ['trending', 'editors-pick', 'most-discussed', 'new-release', 'featured'];
+        const heroItems: HeroSlide[] = [
+          ...mappedMovies.slice(0, 3),
+          ...mappedSeries.slice(0, 2),
+        ]
+          .filter(c => c.backdrop)
+          .slice(0, 5)
+          .map((content, i) => ({ content, badge: BADGE_SEQUENCE[i % BADGE_SEQUENCE.length] }));
+
+        setHeroSlides(heroItems.length > 0 ? heroItems : mappedMovies.slice(0, 1).map(c => ({ content: c, badge: 'featured' as BadgeType })));
         setPopularMovies(mappedMovies.slice(0, 12));
         setAllMovies(mappedMovies);
         setPopularSeries(mappedSeries.slice(0, 12));
@@ -85,7 +98,7 @@ export default function HomePage() {
 
   return (
     <div className="pb-16">
-      {featured && <HeroBanner content={featured} />}
+      {heroSlides.length > 0 && <HeroBanner slides={heroSlides} />}
 
       <div className="mt-8 md:mt-12 space-y-10 md:space-y-16">
         <TrendingClipsRow />
