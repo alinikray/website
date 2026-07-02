@@ -40,9 +40,11 @@ export default function AuthPage() {
           navigate('/');
         }
       } else if (mode === 'register') {
-        const { error } = await signUp(email, password, name || undefined);
+        const { error, needsEmailConfirmation } = await signUp(email, password, name || undefined);
         if (error) {
           setErrorMsg(error);
+        } else if (needsEmailConfirmation) {
+          setForgotSent(true);
         } else {
           navigate('/onboarding');
         }
