@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import HeroBanner from '../components/HeroBanner';
+import HeroBanner, { HeroSlide } from '../components/HeroBanner';
 import ContentRow from '../components/ContentRow';
 import GenreSection from '../components/GenreSection';
 import ContinueWatching from '../components/ContinueWatching';
@@ -12,9 +12,6 @@ import { supabase } from '../lib/supabase';
 import { mapDbMovieToMovie, mapDbSeriesToSeries } from '../lib/mappers';
 import { Movie, Series } from '../types';
 import type { Movie as DbMovie, Series as DbSeries, Genre } from '../lib/database.types';
-
-type BadgeType = 'trending' | 'editors-pick' | 'most-discussed' | 'new-release' | 'featured';
-interface HeroSlide { content: Movie | Series; badge?: BadgeType; }
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
@@ -29,8 +26,17 @@ export default function HomePage() {
     (async () => {
       try {
         const [moviesRes, seriesRes, genresRes] = await Promise.all([
-          supabase.from('movies').select('*').eq('status', 'published').order('imdb_rating', { ascending: false }).limit(30),
-          supabase.from('series').select('*').order('imdb_rating', { ascending: false }).limit(30),
+          supabase
+            .from('movies')
+            .select('*')
+            .eq('status', 'published')
+            .order('imdb_rating', { ascending: false })
+            .limit(30),
+          supabase
+            .from('series')
+            .select('*')
+            .order('imdb_rating', { ascending: false })
+            .limit(30),
           supabase.from('genres').select('*').order('name_en'),
         ]);
 
@@ -38,6 +44,7 @@ export default function HomePage() {
         const dbSeries = (seriesRes.data || []) as DbSeries[];
         const dbGenres = (genresRes.data || []) as Genre[];
 
+        // ── Fetch genre links ──────────────────────────────────────────
         const movieGenreMap: Record<string, Genre[]> = {};
         if (dbMovies.length > 0) {
           const { data: mgLinks } = await supabase
@@ -68,20 +75,50 @@ export default function HomePage() {
           }
         }
 
-        const mappedMovies = dbMovies.map(m => mapDbMovieToMovie(m, movieGenreMap[m.id] || []));
-        const mappedSeries = dbSeries.map(s => mapDbSeriesToSeries(s, seriesGenreMap[s.id] || []));
+        const mappedMovies = dbMovies.map(m =>
+          mapDbMovieToMovie(m, movieGenreMap[m.id] || [])
+        );
+        const mappedSeries = dbSeries.map(s =>
+          mapDbSeriesToSeries(s, seriesGenreMap[s.id] || [])
+        );
 
-        // Build hero slides: top 3 movies + top 2 series, with varied badges
-        const BADGE_SEQUENCE: BadgeType[] = ['trending', 'editors-pick', 'most-discussed', 'new-release', 'featured'];
-        const heroItems: HeroSlide[] = [
-          ...mappedMovies.slice(0, 3),
-          ...mappedSeries.slice(0, 2),
-        ]
-          .filter(c => c.backdrop)
-          .slice(0, 5)
-          .map((content, i) => ({ content, badge: BADGE_SEQUENCE[i % BADGE_SEQUENCE.length] }));
+        // ── Build hero slides ──────────────────────────────────────────
+        // Priority: is_featured=true items first, then top-rated fallback.
+        // Picks up to 3 featured movies + 2 featured series, all must have backdrop.
+        const featuredMovies = mappedMovies.filter(m => m.isFeatured && m.backdrop);
+        const featuredSeries = mappedSeries.filter(s => s.isPopular && s.backdrop);
 
-        setHeroSlides(heroItems.length > 0 ? heroItems : mappedMovies.slice(0, 1).map(c => ({ content: c, badge: 'featured' as BadgeType })));
+        // If not enough featured items, fill with top-rated content that has backdrops
+        const fallbackMovies = mappedMovies.filter(m => !m.isFeatured && m.backdrop);
+        const fallbackSeries = mappedSeries.filter(s => !s.isPopular && s.backdrop);
+
+        const heroMovies = [...featuredMovies, ...fallbackMovies].slice(0, 3);
+        const heroSeriesItems = [...featuredSeries, ...fallbackSeries].slice(0, 2);
+
+        // Interleave: movie, series, movie, … for visual variety
+        const interleaved: (Movie | Series)[] = [];
+        const mq = [...heroMovies];
+        const sq = [...heroSeriesItems];
+        while (mq.length || sq.length) {
+          if (mq.length) interleaved.push(mq.shift()!);
+          if (sq.length) interleaved.push(sq.shift()!);
+        }
+
+        const BADGE_SEQUENCE: HeroSlide['badge'][] = [
+          'trending', 'editors-pick', 'most-discussed', 'new-release', 'featured',
+        ];
+
+        const slides: HeroSlide[] = interleaved.slice(0, 5).map((content, i) => ({
+          content,
+          badge: BADGE_SEQUENCE[i % BADGE_SEQUENCE.length],
+        }));
+
+        setHeroSlides(
+          slides.length > 0
+            ? slides
+            : mappedMovies.slice(0, 1).map(c => ({ content: c, badge: 'featured' as const }))
+        );
+
         setPopularMovies(mappedMovies.slice(0, 12));
         setAllMovies(mappedMovies);
         setPopularSeries(mappedSeries.slice(0, 12));

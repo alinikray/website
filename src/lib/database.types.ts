@@ -61,6 +61,7 @@ export interface Movie {
   country: string | null;
   language: string;
   age_rating: string | null;
+  is_featured: boolean;
   status: 'draft' | 'published' | 'archived';
   created_at: string;
   updated_at: string;
@@ -84,6 +85,7 @@ export interface Series {
   seasons: number;
   total_episodes: number;
   episode_runtime: number | null;
+  is_featured: boolean;
   status: 'draft' | 'published' | 'ongoing' | 'ended' | 'archived';
   created_at: string;
   updated_at: string;

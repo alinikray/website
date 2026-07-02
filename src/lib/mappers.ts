@@ -29,7 +29,7 @@ export function mapDbMovieToMovie(
     director,
     country: m.country || '',
     language: m.language || 'en',
-    isFeatured: m.imdb_rating >= 8.5,
+    isFeatured: m.is_featured || m.imdb_rating >= 8.5,
     isTrending: m.imdb_rating >= 8.0,
     isNewRelease: (m.release_year || 0) >= 2023,
     clips,
@@ -62,7 +62,7 @@ export function mapDbSeriesToSeries(
     status,
     country: s.country || '',
     language: s.language || 'en',
-    isPopular: s.imdb_rating >= 8.5,
+    isPopular: s.is_featured || s.imdb_rating >= 8.5,
   };
 }
 
