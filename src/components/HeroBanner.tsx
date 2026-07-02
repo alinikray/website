@@ -424,12 +424,12 @@ export default function HeroBanner({ slides: propSlides }: HeroBannerProps) {
                 'linear-gradient(to bottom, #0B0B0F88 0%, transparent 35%)',
             }}
           />
-          {/* Radial vignette on right edge — wider to backdrop the thumbnail sidebar */}
+          {/* Radial vignette on right edge */}
           <div
-            className="absolute inset-0 opacity-70"
+            className="absolute inset-0 opacity-50"
             style={{
               background:
-                'radial-gradient(ellipse at 78% 50%, transparent 25%, #0B0B0F 75%)',
+                'radial-gradient(ellipse at 80% 50%, transparent 35%, #0B0B0F 85%)',
             }}
           />
         </motion.div>
@@ -600,62 +600,25 @@ export default function HeroBanner({ slides: propSlides }: HeroBannerProps) {
         </div>
       </div>
 
-      {/* ── Right thumbnail sidebar ───────────────────────────────────────── */}
+      {/* ── Slide indicators (vertical, right) ────────────────────────────── */}
       {total > 1 && (
-        <div className="absolute right-4 sm:right-6 lg:right-8 top-1/2 -translate-y-1/2 z-20 hidden md:flex flex-col gap-3">
-          {slides.map((s, i) => {
-            const thumb = s.content.poster || s.content.backdrop;
-            const active = i === idx;
-            return (
-              <motion.button
-                key={i}
-                onClick={() => setIdx(i)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.97 }}
-                aria-label={`Show ${s.content.title}`}
-                className={`relative w-[88px] h-[120px] rounded-xl overflow-hidden flex-shrink-0 transition-all duration-300 focus:outline-none ${
-                  active
-                    ? 'ring-2 ring-[#7C3AED] ring-offset-1 ring-offset-transparent shadow-[0_0_18px_rgba(124,58,237,0.55)]'
-                    : 'ring-1 ring-white/10 opacity-60 hover:opacity-90'
-                }`}
-              >
-                {/* Poster / backdrop image */}
-                {thumb ? (
-                  <img
-                    src={thumb}
-                    alt={s.content.title}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    draggable={false}
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-dark-800" />
-                )}
-
-                {/* Darkened overlay */}
-                <div
-                  className={`absolute inset-0 transition-opacity duration-300 ${active ? 'opacity-20' : 'opacity-50'}`}
-                  style={{ background: 'linear-gradient(to top, #0B0B0F 0%, transparent 55%)' }}
-                />
-                <div className={`absolute inset-0 bg-dark-950 transition-opacity duration-300 ${active ? 'opacity-0' : 'opacity-30'}`} />
-
-                {/* Title */}
-                <div className="absolute bottom-0 left-0 right-0 px-2 pb-2">
-                  <p className="text-white text-[10px] font-semibold leading-tight line-clamp-2 text-left drop-shadow">
-                    {s.content.title}
-                  </p>
-                </div>
-
-                {/* Active neon left bar */}
-                {active && (
-                  <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#7C3AED] rounded-l-xl" />
-                )}
-              </motion.button>
-            );
-          })}
+        <div className="absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2.5 z-20">
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setIdx(i)}
+              aria-label={`Slide ${i + 1}`}
+              className={`rounded-full transition-all duration-300 ${
+                i === idx
+                  ? 'h-8 w-1.5 bg-accent-500 shadow-glow'
+                  : 'h-1.5 w-1.5 bg-gray-600 hover:bg-gray-400'
+              }`}
+            />
+          ))}
         </div>
       )}
 
-      {/* ── Prev / Next arrows (mobile only — desktop uses thumbnail sidebar) ── */}
+      {/* ── Prev / Next arrows ────────────────────────────────────────────── */}
       {total > 1 && (
         <>
           <motion.button
@@ -663,7 +626,7 @@ export default function HeroBanner({ slides: propSlides }: HeroBannerProps) {
             whileTap={{ scale: 0.9 }}
             onClick={goPrev}
             aria-label="Previous"
-            className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-dark-900/55 backdrop-blur-sm border border-white/10 hover:border-accent-500/40 text-white hover:text-accent-400 transition-all duration-200 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 md:hidden"
+            className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-dark-900/55 backdrop-blur-sm border border-white/10 hover:border-accent-500/40 text-white hover:text-accent-400 transition-all duration-200 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
           >
             <ChevronLeft className="w-5 h-5" />
           </motion.button>
@@ -672,26 +635,10 @@ export default function HeroBanner({ slides: propSlides }: HeroBannerProps) {
             whileTap={{ scale: 0.9 }}
             onClick={goNext}
             aria-label="Next"
-            className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-dark-900/55 backdrop-blur-sm border border-white/10 hover:border-accent-500/40 text-white hover:text-accent-400 transition-all duration-200 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 md:hidden"
+            className="absolute right-11 sm:right-14 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-dark-900/55 backdrop-blur-sm border border-white/10 hover:border-accent-500/40 text-white hover:text-accent-400 transition-all duration-200 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
           >
             <ChevronRight className="w-5 h-5" />
           </motion.button>
-
-          {/* Mobile dot indicators */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20 md:hidden">
-            {slides.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setIdx(i)}
-                aria-label={`Slide ${i + 1}`}
-                className={`rounded-full transition-all duration-300 ${
-                  i === idx
-                    ? 'h-1.5 w-6 bg-accent-500'
-                    : 'h-1.5 w-1.5 bg-gray-600 hover:bg-gray-400'
-                }`}
-              />
-            ))}
-          </div>
         </>
       )}
 
