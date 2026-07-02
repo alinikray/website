@@ -2,11 +2,9 @@ import { ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
-import DiscoveryBar from './DiscoveryBar';
 
 const noFooterRoutes = ['/explore', '/auth', '/onboarding'];
 const noHeaderRoutes = ['/auth', '/onboarding'];
-const noDiscoveryRoutes = ['/explore', '/auth', '/onboarding', '/admin'];
 
 interface LayoutProps {
   children: ReactNode;
@@ -16,7 +14,6 @@ export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const showHeader = !noHeaderRoutes.some(r => location.pathname === r);
   const showFooter = !noFooterRoutes.some(r => location.pathname.startsWith(r));
-  const showDiscovery = showHeader && !noDiscoveryRoutes.some(r => location.pathname.startsWith(r));
 
   return (
     <div className="min-h-screen bg-dark-900 flex flex-col relative overflow-x-hidden">
@@ -36,7 +33,6 @@ export default function Layout({ children }: LayoutProps) {
       </div>
 
       {showHeader && <Header />}
-      {showDiscovery && <DiscoveryBar />}
       <main className="flex-1 relative z-10">{children}</main>
       {showFooter && <Footer />}
     </div>
