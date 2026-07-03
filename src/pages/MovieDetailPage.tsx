@@ -322,6 +322,7 @@ export default function MovieDetailPage() {
   const [hoverRating, setHoverRating] = useState(0);
   const [commentLikes, setCommentLikes] = useState<Record<number, boolean>>({});
   const [showAdvancedDownload, setShowAdvancedDownload] = useState(false);
+  const [showMobileAdvancedDownload, setShowMobileAdvancedDownload] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -478,27 +479,65 @@ export default function MovieDetailPage() {
               ))}
             </div>
 
-            {/* 2 CTA buttons — no bookmark */}
-            <div className="grid grid-cols-2 gap-3 mb-5">
-              <Link to={`/movie/${movie.id}`}>
+            {/* CTA buttons */}
+            <div className="flex flex-col gap-3 mb-5">
+              {/* Row 1: More Info + Watch Now */}
+              <div className="grid grid-cols-2 gap-3">
+                <Link to={`/movie/${movie.id}`} className="block">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="w-full flex items-center justify-center gap-2 glass border border-white/15 text-white font-semibold py-3 min-h-[48px] rounded-xl transition-all text-sm"
+                  >
+                    <Info className="w-4 h-4 shrink-0" />
+                    More Info
+                  </motion.button>
+                </Link>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
-                  className="w-full flex items-center justify-center gap-2 glass border border-white/15 text-white font-semibold py-3 rounded-xl transition-all text-sm"
+                  className="w-full flex items-center justify-center gap-2 bg-accent-600 hover:bg-accent-500 text-white font-semibold py-3 min-h-[48px] rounded-xl shadow-lg shadow-accent-500/30 transition-all text-sm"
+                  onClick={() => window.location.href = `/watch/${movie.id}`}
                 >
-                  <Info className="w-4 h-4" />
-                  More Info
+                  <Play className="w-4 h-4 fill-current shrink-0" />
+                  پخش آنلاین
                 </motion.button>
-              </Link>
+              </div>
+
+              {/* Row 2: Download */}
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                className="w-full flex items-center justify-center gap-2 bg-accent-600 hover:bg-accent-500 text-white font-semibold py-3 rounded-xl shadow-lg shadow-accent-500/30 transition-all text-sm"
-                onClick={() => window.location.href = `/watch/${movie.id}`}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full flex items-center justify-center gap-2 glass border border-white/12 text-white font-semibold py-3 min-h-[48px] rounded-xl transition-all text-sm"
               >
-                <Play className="w-4 h-4 fill-current" />
-                Watch Now
+                <Download className="w-4 h-4 shrink-0" />
+                دانلود
               </motion.button>
+
+              {/* Row 3: Advanced Download */}
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowMobileAdvancedDownload(v => !v)}
+                className={`w-full flex items-center justify-center gap-2 font-semibold py-3 min-h-[48px] rounded-xl transition-all text-sm ${
+                  showMobileAdvancedDownload
+                    ? 'bg-accent-600 text-white shadow-lg shadow-accent-500/25'
+                    : 'bg-accent-600/15 border border-accent-500/30 text-accent-300'
+                }`}
+              >
+                <Zap className="w-4 h-4 shrink-0" />
+                دانلود پیشرفته
+              </motion.button>
+
+              {/* Advanced Download Panel (mobile) */}
+              <AnimatePresence>
+                {showMobileAdvancedDownload && (
+                  <AdvancedDownloadPanel
+                    onClose={() => setShowMobileAdvancedDownload(false)}
+                    movieTitle={movie.title}
+                  />
+                )}
+              </AnimatePresence>
             </div>
 
             {/* My List section */}
