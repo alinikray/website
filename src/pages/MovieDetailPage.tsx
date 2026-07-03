@@ -6,7 +6,7 @@ import {
   Heart, Share2, ChevronRight, Eye, Users,
   MessageSquare, ThumbsUp, ChevronDown, Download,
   HardDrive, Film, Award, Clapperboard, BookOpen,
-  Info, Crown,
+  Info, Crown, Volume2, Subtitles, Gauge, Link2, Sparkles,
 } from 'lucide-react';
 import { getMovieById, getSimilarMovies, getMovieGenres, getClipsByMovie } from '../lib/api';
 import { fetchMovieDetails, fetchSimilarMovies } from '../lib/tmdbService';
@@ -33,6 +33,17 @@ const downloadOptions = [
   { quality: '720p', label: 'HD', size: '1.1 GB' },
   { quality: '480p', label: 'SD', size: '520 MB' },
 ];
+
+// Placeholder data for the Advanced Download panel (UI structure only — no real sources).
+const advancedQualities = [
+  { quality: '4K', size: '8.2 GB', codec: 'HEVC (H.265)', bitrate: '25 Mbps' },
+  { quality: '1080p', size: '2.3 GB', codec: 'H.264 (AVC)', bitrate: '8 Mbps' },
+  { quality: '720p', size: '1.1 GB', codec: 'H.264 (AVC)', bitrate: '4 Mbps' },
+  { quality: '480p', size: '520 MB', codec: 'H.264 (AVC)', bitrate: '1.5 Mbps' },
+];
+
+const advancedAudio = { language: 'Persian / English', format: 'Dolby Digital 5.1 (AC-3)' };
+const advancedSubtitles = { persian: 'Included (SRT / Embedded)', english: 'Included (SRT)' };
 
 // Mock "My List" avatars
 const myListAvatars = [
@@ -82,6 +93,25 @@ function Accordion({ title, icon: Icon, children, defaultOpen = false }: {
   );
 }
 
+// Non-collapsible section — same visual language as Accordion, but always expanded.
+function StaticSection({ title, icon: Icon, children }: {
+  title: string;
+  icon: React.ElementType;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="glass rounded-2xl overflow-hidden">
+      <div className="w-full flex items-center gap-3 p-5">
+        <Icon className="w-5 h-5 text-accent-400" />
+        <span className="text-white font-semibold">{title}</span>
+      </div>
+      <div className="px-5 pb-5 border-t border-dark-700/50">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function MovieDetailPage() {
   const { id } = useParams<{ id: string }>();
 
@@ -95,6 +125,9 @@ export default function MovieDetailPage() {
   const [userRating, setUserRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [commentLikes, setCommentLikes] = useState<Record<number, boolean>>({});
+  const [showAdvancedDownload, setShowAdvancedDownload] = useState(false);
+  const [advQuality, setAdvQuality] = useState('1080p');
+  const selectedAdvQuality = advancedQualities.find(q => q.quality === advQuality) ?? advancedQualities[1];
 
   useEffect(() => {
     if (!id) return;
@@ -379,9 +412,9 @@ export default function MovieDetailPage() {
         {/* Mobile accordions */}
         <div className="px-3 space-y-3 pb-28">
           {movie.description && (
-            <Accordion title="Story" icon={BookOpen} defaultOpen>
+            <StaticSection title="Story" icon={BookOpen}>
               <p className="text-gray-300 leading-relaxed mt-4 text-sm">{movie.description}</p>
-            </Accordion>
+            </StaticSection>
           )}
           {movie.cast.length > 0 && (
             <Accordion title="Cast" icon={Users}>
@@ -648,9 +681,9 @@ export default function MovieDetailPage() {
               className="mt-10 space-y-3"
             >
               {movie.description && (
-                <Accordion title="Story" icon={BookOpen} defaultOpen>
+                <StaticSection title="Story" icon={BookOpen}>
                   <p className="text-gray-300 leading-relaxed mt-4">{movie.description}</p>
-                </Accordion>
+                </StaticSection>
               )}
 
               {movie.cast.length > 0 && (
@@ -761,10 +794,146 @@ export default function MovieDetailPage() {
 
               <Accordion title="Download" icon={Download}>
                 <div className="mt-4 space-y-3">
-                  <p className="text-xs text-gray-500 mb-4 flex items-center gap-2">
-                    <Info className="w-4 h-4" />
-                    Downloads are available for Premium subscribers. Expires after 30 days.
-                  </p>
+                  <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <p className="text-xs text-gray-500 flex items-center gap-2">
+                      <Info className="w-4 h-4" />
+                      Downloads are available for Premium subscribers. Expires after 30 days.
+                    </p>
+                    <button
+                      onClick={() => setShowAdvancedDownload(s => !s)}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-accent-500/40 bg-accent-600/10 text-accent-300 hover:bg-accent-600/20 text-sm font-semibold transition-all"
+                      style={{ fontFamily: "'Vazirmatn', 'Tahoma', sans-serif" }}
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      دانلود پیشرفته
+                      <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showAdvancedDownload ? 'rotate-180' : ''}`} />
+                    </button>
+                  </div>
+
+                  <AnimatePresence>
+                    {showAdvancedDownload && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: 'easeInOut' }}
+                        className="overflow-hidden"
+                      >
+                        <div className="rounded-2xl border border-accent-500/30 bg-dark-800/40 p-4 sm:p-5 space-y-5">
+                          {/* Quality Options */}
+                          <div>
+                            <div className="flex items-center gap-2 mb-3">
+                              <Film className="w-4 h-4 text-accent-400" />
+                              <h4 className="text-white font-semibold text-sm">Quality Options</h4>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {advancedQualities.map(q => (
+                                <button
+                                  key={q.quality}
+                                  onClick={() => setAdvQuality(q.quality)}
+                                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                    advQuality === q.quality
+                                      ? 'bg-accent-600 text-white shadow-lg shadow-accent-500/30'
+                                      : 'bg-dark-700/60 text-gray-300 hover:bg-dark-700'
+                                  }`}
+                                >
+                                  {q.quality}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* Audio Information */}
+                            <div className="bg-dark-900/40 rounded-xl p-4">
+                              <div className="flex items-center gap-2 mb-3">
+                                <Volume2 className="w-4 h-4 text-accent-400" />
+                                <h4 className="text-white font-semibold text-sm">Audio Information</h4>
+                              </div>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-500">Language</span>
+                                  <span className="text-white font-medium">{advancedAudio.language}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-500">Audio Format</span>
+                                  <span className="text-white font-medium">{advancedAudio.format}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Subtitle Information */}
+                            <div className="bg-dark-900/40 rounded-xl p-4">
+                              <div className="flex items-center gap-2 mb-3">
+                                <Subtitles className="w-4 h-4 text-accent-400" />
+                                <h4 className="text-white font-semibold text-sm">Subtitle Information</h4>
+                              </div>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-500">Persian Subtitle</span>
+                                  <span className="text-white font-medium">{advancedSubtitles.persian}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-500">English Subtitle</span>
+                                  <span className="text-white font-medium">{advancedSubtitles.english}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Technical Details */}
+                          <div className="bg-dark-900/40 rounded-xl p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                              <Gauge className="w-4 h-4 text-accent-400" />
+                              <h4 className="text-white font-semibold text-sm">Technical Details</h4>
+                              <span className="text-xs text-accent-400 ml-auto">{selectedAdvQuality.quality}</span>
+                            </div>
+                            <div className="grid grid-cols-3 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 text-xs mb-1">File Size</p>
+                                <p className="text-white font-medium">{selectedAdvQuality.size}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 text-xs mb-1">Codec</p>
+                                <p className="text-white font-medium">{selectedAdvQuality.codec}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 text-xs mb-1">Bitrate</p>
+                                <p className="text-white font-medium">{selectedAdvQuality.bitrate}</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Download Links */}
+                          <div>
+                            <div className="flex items-center gap-2 mb-3">
+                              <Link2 className="w-4 h-4 text-accent-400" />
+                              <h4 className="text-white font-semibold text-sm">Download Links</h4>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-accent-600 hover:bg-accent-500 text-white text-sm font-semibold transition-all"
+                              >
+                                <Download className="w-4 h-4" />
+                                Direct Download
+                              </motion.button>
+                              <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl glass border border-white/15 text-white text-sm font-semibold hover:bg-dark-700/50 transition-all"
+                              >
+                                <Link2 className="w-4 h-4" />
+                                Mirror Download
+                              </motion.button>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   {downloadOptions.map((opt) => (
                     <div key={opt.quality} className="flex items-center justify-between bg-dark-800/50 rounded-xl p-4">
                       <div className="flex items-center gap-3">
