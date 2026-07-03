@@ -6,7 +6,7 @@ import {
   Heart, Share2, ChevronRight, Eye, Users,
   MessageSquare, ThumbsUp, ChevronDown, Download,
   HardDrive, Film, Award, Clapperboard, BookOpen,
-  Info, Crown, Zap, Link2, Languages, Cpu, X, Volume2,
+  Info, Zap, Link2, Languages, Cpu, X, Volume2,
   FileText,
 } from 'lucide-react';
 import { getMovieById, getSimilarMovies, getMovieGenres, getClipsByMovie } from '../lib/api';
@@ -260,14 +260,6 @@ function AdvancedDownloadPanel({ onClose, movieTitle }: AdvancedDownloadPanelPro
   );
 }
 
-// Mock "My List" avatars
-const myListAvatars = [
-  { initials: 'RM', color: 'from-purple-500 to-purple-700' },
-  { initials: 'SK', color: 'from-pink-500 to-pink-700' },
-  { initials: 'AH', color: 'from-blue-500 to-blue-700' },
-  { initials: 'MN', color: 'from-emerald-500 to-emerald-700' },
-];
-
 function Accordion({ title, icon: Icon, children, defaultOpen = false }: {
   title: string;
   icon: React.ElementType;
@@ -409,171 +401,243 @@ export default function MovieDetailPage() {
     <div className="min-h-screen -mt-14 md:-mt-20 lg:-mt-24">
 
       {/* ════════════ MOBILE LAYOUT (max-md) ════════════ */}
-      <div className="md:hidden">
-        {/* Poster card with top badges + centered play button */}
-        <div className="px-3 pt-16 pb-4">
-          <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-black/70 ring-1 ring-white/10">
-            <img
-              src={movie.poster || movie.backdrop}
-              alt={movie.title}
-              className="w-full aspect-[2/3] object-cover"
-            />
+      <div className="md:hidden min-h-screen bg-dark-900">
 
-            {/* Top badges */}
-            <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
-              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-black/60 backdrop-blur-sm border border-yellow-500/30 text-yellow-300 text-[11px] font-semibold">
-                <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                {movie.rating.toFixed(1)} IMDb
-              </span>
-              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-black/60 backdrop-blur-sm border border-amber-500/30 text-amber-300 text-[11px] font-semibold">
-                <Crown className="w-3 h-3" />
-                Premium
-              </span>
-            </div>
-
-            {/* Centered play button */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => window.location.href = `/watch/${movie.id}`}
-                className="w-16 h-16 rounded-full bg-white/15 backdrop-blur-md border-2 border-white/40 flex items-center justify-center shadow-2xl"
-              >
-                <Play className="w-7 h-7 text-white fill-current ml-0.5" />
-              </motion.button>
-            </div>
-
-            {/* Bottom gradient */}
-            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-dark-900/80 to-transparent" />
+        {/* ── Mobile Header ── */}
+        <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-3 py-2.5 bg-dark-900/95 backdrop-blur-xl border-b border-white/5">
+          {/* Left: hamburger + profile */}
+          <div className="flex items-center gap-2">
+            <button className="w-9 h-9 rounded-xl bg-purple-600/20 border border-purple-500/20 flex items-center justify-center text-gray-300">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <button className="w-9 h-9 rounded-xl bg-purple-600/20 border border-purple-500/20 flex items-center justify-center text-gray-300">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+            </button>
           </div>
 
-          {/* Title + year below poster */}
-          <div className="mt-4 px-1">
-            <h1 className="text-2xl font-display text-white leading-tight mb-1">{movie.title}</h1>
-            {movie.titlePersian && (
-              <p className="text-sm text-gray-400 mb-3" style={{ fontFamily: "'Vazirmatn', 'Tahoma', sans-serif" }}>
-                {movie.titlePersian}
-              </p>
-            )}
+          {/* Center: bell + search */}
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <button className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                </svg>
+              </button>
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-purple-600 text-white text-[9px] font-bold flex items-center justify-center leading-none">2</span>
+            </div>
+            <button className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" />
+              </svg>
+            </button>
+          </div>
 
-            {/* Genre tags + year row */}
-            <div className="flex flex-wrap items-center gap-1.5 mb-4">
-              {movie.year > 0 && (
-                <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-dark-700/80 border border-dark-600/60 text-gray-300 text-xs">
-                  <Calendar className="w-3 h-3 opacity-60" />{movie.year}
-                </span>
-              )}
-              {movie.duration > 0 && (
-                <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-dark-700/80 border border-dark-600/60 text-gray-300 text-xs">
-                  <Clock className="w-3 h-3 opacity-60" />{Math.floor(movie.duration / 60)}h {movie.duration % 60}m
-                </span>
-              )}
-              {movie.genres.slice(0, 3).map(genre => (
-                <Link
-                  key={genre}
-                  to={`/search?genre=${encodeURIComponent(genre)}`}
-                  className="px-2.5 py-1 rounded-full bg-dark-700/80 border border-dark-600/60 text-gray-300 text-xs hover:text-white transition-colors"
-                >
-                  {genre}
-                </Link>
-              ))}
+          {/* Right: logo */}
+          <Link to="/" className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-500 to-accent-700 flex items-center justify-center shadow-lg shadow-accent-500/30">
+            <span className="text-white font-display font-bold text-base">F</span>
+          </Link>
+        </div>
+
+        {/* ── Hero backdrop + floating poster ── */}
+        <div className="relative pt-14">
+          {/* Blurred backdrop */}
+          <div className="relative h-64 overflow-hidden">
+            <img
+              src={movie.backdrop || movie.poster}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 w-full h-full object-cover scale-110 blur-sm"
+            />
+            <div className="absolute inset-0 bg-dark-900/40" />
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-dark-900 to-transparent" />
+          </div>
+
+          {/* Floating poster — overlaps the backdrop */}
+          <div className="flex flex-col items-center -mt-24 px-6 relative z-10">
+            <div className="relative w-44 rounded-2xl overflow-hidden shadow-2xl shadow-black/80 ring-1 ring-white/10">
+              <img
+                src={movie.poster || movie.backdrop}
+                alt={movie.title}
+                className="w-full aspect-[2/3] object-cover"
+              />
+              {/* Title overlay at top of poster */}
+              <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/80 to-transparent pt-3 pb-6 px-3">
+                <p className="text-white font-display font-black text-lg tracking-widest uppercase text-center leading-tight drop-shadow-lg">
+                  {movie.title.split(' ').slice(0, 2).join(' ')}
+                </p>
+              </div>
             </div>
 
-            {/* CTA buttons */}
-            <div className="flex flex-col gap-3 mb-5">
-              {/* Row 1: More Info + Watch Now */}
-              <div className="grid grid-cols-2 gap-3">
-                <Link to={`/movie/${movie.id}`} className="block">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
-                    className="w-full flex items-center justify-center gap-2 glass border border-white/15 text-white font-semibold py-3 min-h-[48px] rounded-xl transition-all text-sm"
-                  >
-                    <Info className="w-4 h-4 shrink-0" />
-                    More Info
-                  </motion.button>
-                </Link>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                  className="w-full flex items-center justify-center gap-2 bg-accent-600 hover:bg-accent-500 text-white font-semibold py-3 min-h-[48px] rounded-xl shadow-lg shadow-accent-500/30 transition-all text-sm"
-                  onClick={() => window.location.href = `/watch/${movie.id}`}
-                >
-                  <Play className="w-4 h-4 fill-current shrink-0" />
-                  پخش آنلاین
-                </motion.button>
-              </div>
-
-              {/* Row 2: Download */}
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center justify-center gap-2 glass border border-white/12 text-white font-semibold py-3 min-h-[48px] rounded-xl transition-all text-sm"
-              >
-                <Download className="w-4 h-4 shrink-0" />
-                دانلود
-              </motion.button>
-
-              {/* Row 3: Advanced Download */}
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setShowMobileAdvancedDownload(v => !v)}
-                className={`w-full flex items-center justify-center gap-2 font-semibold py-3 min-h-[48px] rounded-xl transition-all text-sm ${
-                  showMobileAdvancedDownload
-                    ? 'bg-accent-600 text-white shadow-lg shadow-accent-500/25'
-                    : 'bg-accent-600/15 border border-accent-500/30 text-accent-300'
-                }`}
-              >
-                <Zap className="w-4 h-4 shrink-0" />
-                دانلود پیشرفته
-              </motion.button>
-
-              {/* Advanced Download Panel (mobile) */}
-              <AnimatePresence>
-                {showMobileAdvancedDownload && (
-                  <AdvancedDownloadPanel
-                    onClose={() => setShowMobileAdvancedDownload(false)}
-                    movieTitle={movie.title}
-                  />
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* My List section */}
-            <div className="glass rounded-2xl px-4 py-3 flex items-center justify-between mb-2">
-              <div>
-                <p className="text-white text-sm font-semibold mb-0.5">My List</p>
-                <p className="text-gray-500 text-xs">4 friends watching</p>
-              </div>
-              <div className="flex items-center gap-1">
-                {/* Overlapping avatars */}
-                <div className="flex -space-x-2">
-                  {myListAvatars.map((av, i) => (
-                    <div
-                      key={i}
-                      className={`w-8 h-8 rounded-full bg-gradient-to-br ${av.color} border-2 border-dark-800 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0`}
-                    >
-                      {av.initials}
-                    </div>
-                  ))}
+            {/* Rating row under poster */}
+            <div className="mt-3 flex flex-col items-center gap-1.5">
+              <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-yellow-500/20">
+                  <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                  <span className="text-yellow-400 text-sm font-bold">{movie.rating.toFixed(1)}</span>
+                  <span className="text-yellow-500/70 text-xs font-semibold">IMDb</span>
                 </div>
-                {/* + button */}
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setIsSaved(!isSaved)}
-                  className={`w-8 h-8 rounded-full border-2 border-dashed flex items-center justify-center ml-1 transition-all ${
-                    isSaved
-                      ? 'border-accent-500 bg-accent-600/20 text-accent-400'
-                      : 'border-gray-600 text-gray-500 hover:border-accent-500 hover:text-accent-400'
-                  }`}
-                >
-                  {isSaved ? <Check className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
-                </motion.button>
+              </div>
+              <p className="text-gray-500 text-xs">Rate this movie</p>
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map(s => (
+                  <motion.button
+                    key={s}
+                    whileTap={{ scale: 0.85 }}
+                    onClick={() => setUserRating(s * 2)}
+                  >
+                    <Star className={`w-5 h-5 transition-colors ${s * 2 <= userRating ? 'text-yellow-400 fill-current' : 'text-gray-700'}`} />
+                  </motion.button>
+                ))}
               </div>
             </div>
           </div>
         </div>
+
+        {/* ── Content card below hero ── */}
+        <div className="px-4 pt-5 pb-28">
+
+          {/* Title */}
+          <h1 className="text-2xl font-display font-bold text-white text-center mb-1 leading-tight">
+            {movie.title}
+          </h1>
+          {movie.titlePersian && (
+            <p className="text-sm text-gray-400 text-center mb-3" style={{ fontFamily: "'Vazirmatn', 'Tahoma', sans-serif" }}>
+              {movie.titlePersian}
+            </p>
+          )}
+
+          {/* Meta row */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+            {movie.country && (
+              <span className="flex items-center gap-1 text-gray-400 text-xs">
+                <Globe className="w-3.5 h-3.5 opacity-70" />
+                {movie.country}
+              </span>
+            )}
+            {movie.duration > 0 && (
+              <span className="flex items-center gap-1 text-gray-400 text-xs">
+                <Clock className="w-3.5 h-3.5 opacity-70" />
+                {Math.floor(movie.duration / 60)}h {movie.duration % 60}m
+              </span>
+            )}
+            {movie.year > 0 && (
+              <span className="flex items-center gap-1 text-gray-400 text-xs">
+                <Calendar className="w-3.5 h-3.5 opacity-70" />
+                {movie.year}
+              </span>
+            )}
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-yellow-500 text-gray-900 text-xs font-bold">
+              <span>IMDb</span>
+              <Star className="w-3 h-3 fill-current" />
+              {movie.rating.toFixed(1)}
+            </span>
+          </div>
+
+          {/* Genre pills */}
+          <div className="flex flex-wrap justify-center gap-2 mb-5">
+            {movie.genres.slice(0, 4).map(genre => (
+              <Link
+                key={genre}
+                to={`/search?genre=${encodeURIComponent(genre)}`}
+                className="px-3 py-1.5 rounded-full bg-dark-800/80 border border-white/10 text-gray-300 text-xs font-medium hover:text-white transition-colors"
+              >
+                {genre}
+              </Link>
+            ))}
+          </div>
+
+          {/* ── Action buttons (stacked) ── */}
+          <div className="flex flex-col gap-3 mb-4">
+            {/* Watch Now */}
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => window.location.href = `/watch/${movie.id}`}
+              className="w-full flex items-center justify-center gap-2.5 bg-accent-600 hover:bg-accent-500 text-white font-bold py-3.5 min-h-[52px] rounded-xl shadow-[0_0_24px_rgba(124,58,237,0.4)] transition-all text-base"
+            >
+              <Play className="w-5 h-5 fill-current shrink-0" />
+              Watch Now
+            </motion.button>
+
+            {/* Add to List */}
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setIsSaved(!isSaved)}
+              className={`w-full flex items-center justify-center gap-2.5 font-semibold py-3.5 min-h-[52px] rounded-xl border transition-all text-base ${
+                isSaved
+                  ? 'bg-accent-600/20 border-accent-500/50 text-accent-300'
+                  : 'bg-dark-800/60 border-white/12 text-white hover:border-white/25'
+              }`}
+            >
+              {isSaved ? <Check className="w-5 h-5 shrink-0" /> : <Plus className="w-5 h-5 shrink-0" />}
+              {isSaved ? 'Saved' : 'Add to List'}
+            </motion.button>
+
+            {/* Download */}
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full flex items-center justify-center gap-2.5 bg-dark-800/60 border border-white/12 text-white font-semibold py-3.5 min-h-[52px] rounded-xl transition-all text-base hover:border-white/25"
+            >
+              <Download className="w-5 h-5 shrink-0" />
+              دانلود
+            </motion.button>
+
+            {/* Advanced Download */}
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowMobileAdvancedDownload(v => !v)}
+              className={`w-full flex items-center justify-center gap-2.5 font-semibold py-3.5 min-h-[52px] rounded-xl transition-all text-base ${
+                showMobileAdvancedDownload
+                  ? 'bg-accent-600 text-white shadow-lg shadow-accent-500/25'
+                  : 'bg-accent-600/15 border border-accent-500/30 text-accent-300 hover:bg-accent-600/25'
+              }`}
+            >
+              <Zap className="w-5 h-5 shrink-0" />
+              دانلود پیشرفته
+            </motion.button>
+
+            {/* Advanced Download Panel */}
+            <AnimatePresence>
+              {showMobileAdvancedDownload && (
+                <AdvancedDownloadPanel
+                  onClose={() => setShowMobileAdvancedDownload(false)}
+                  movieTitle={movie.title}
+                />
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* ── Quick actions row ── */}
+          <div className="grid grid-cols-3 gap-2 mb-6">
+            {[
+              { icon: Eye, label: 'Viewed' },
+              { icon: Share2, label: 'Share' },
+              { icon: Heart, label: isLiked ? 'Liked' : 'Like' },
+            ].map(({ icon: Icon, label }) => (
+              <motion.button
+                key={label}
+                whileTap={{ scale: 0.93 }}
+                onClick={label === 'Liked' || label === 'Like' ? () => setIsLiked(v => !v) : undefined}
+                className={`flex flex-col items-center gap-1.5 py-3 rounded-xl border transition-all text-xs font-medium ${
+                  label === 'Liked'
+                    ? 'bg-red-500/10 border-red-500/20 text-red-400'
+                    : 'bg-dark-800/60 border-white/8 text-gray-400 hover:text-white hover:border-white/15'
+                }`}
+              >
+                <Icon className={`w-4.5 h-4.5 ${label === 'Liked' ? 'fill-current' : ''}`} />
+                {label}
+              </motion.button>
+            ))}
+          </div>
+
+        </div>{/* end px-4 content card */}
 
         {/* Mobile clips: 2-column grid */}
         {clips.length > 0 && (
