@@ -6,7 +6,8 @@ import {
   Heart, Share2, ChevronRight, Eye, Users,
   MessageSquare, ThumbsUp, ChevronDown, Download,
   HardDrive, Film, Award, Clapperboard, BookOpen,
-  Info, Crown,
+  Info, Crown, Zap, Link2, Languages, Cpu, X, Volume2,
+  FileText,
 } from 'lucide-react';
 import { getMovieById, getSimilarMovies, getMovieGenres, getClipsByMovie } from '../lib/api';
 import { fetchMovieDetails, fetchSimilarMovies } from '../lib/tmdbService';
@@ -33,6 +34,231 @@ const downloadOptions = [
   { quality: '720p', label: 'HD', size: '1.1 GB' },
   { quality: '480p', label: 'SD', size: '520 MB' },
 ];
+
+const advancedDownloadOptions = [
+  {
+    quality: '4K',
+    label: 'Ultra HD',
+    size: '8.1 GB',
+    codec: 'H.265 / HEVC',
+    bitrate: '40 Mbps',
+    audio: [
+      { lang: 'English', format: 'Dolby Atmos 7.1' },
+      { lang: 'Persian', format: 'AAC 2.0' },
+    ],
+    subtitles: [
+      { lang: 'Persian Subtitle', code: 'fa' },
+      { lang: 'English Subtitle', code: 'en' },
+    ],
+  },
+  {
+    quality: '1080p',
+    label: 'Full HD',
+    size: '2.3 GB',
+    codec: 'H.264 / AVC',
+    bitrate: '12 Mbps',
+    audio: [
+      { lang: 'English', format: 'DTS-HD 5.1' },
+      { lang: 'Persian', format: 'AAC 2.0' },
+    ],
+    subtitles: [
+      { lang: 'Persian Subtitle', code: 'fa' },
+      { lang: 'English Subtitle', code: 'en' },
+    ],
+  },
+  {
+    quality: '720p',
+    label: 'HD',
+    size: '1.1 GB',
+    codec: 'H.264 / AVC',
+    bitrate: '6 Mbps',
+    audio: [
+      { lang: 'English', format: 'AAC 5.1' },
+      { lang: 'Persian', format: 'AAC 2.0' },
+    ],
+    subtitles: [
+      { lang: 'Persian Subtitle', code: 'fa' },
+      { lang: 'English Subtitle', code: 'en' },
+    ],
+  },
+  {
+    quality: '480p',
+    label: 'SD',
+    size: '520 MB',
+    codec: 'H.264 / AVC',
+    bitrate: '2.5 Mbps',
+    audio: [
+      { lang: 'English', format: 'AAC 2.0' },
+    ],
+    subtitles: [
+      { lang: 'Persian Subtitle', code: 'fa' },
+      { lang: 'English Subtitle', code: 'en' },
+    ],
+  },
+];
+
+interface AdvancedDownloadPanelProps {
+  onClose: () => void;
+  movieTitle: string;
+}
+
+function AdvancedDownloadPanel({ onClose, movieTitle }: AdvancedDownloadPanelProps) {
+  const [selectedQuality, setSelectedQuality] = useState(advancedDownloadOptions[1]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 8 }}
+      transition={{ duration: 0.22 }}
+      className="mt-4 rounded-2xl border border-accent-500/25 bg-dark-800/60 backdrop-blur-sm overflow-hidden"
+    >
+      {/* Panel header */}
+      <div className="flex items-center justify-between px-5 py-4 border-b border-dark-700/60 bg-accent-600/5">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-accent-600/20 flex items-center justify-center">
+            <Zap className="w-4 h-4 text-accent-400" />
+          </div>
+          <div>
+            <p className="text-white font-semibold text-sm">دانلود پیشرفته</p>
+            <p className="text-gray-500 text-xs">Advanced Download</p>
+          </div>
+        </div>
+        <button
+          onClick={onClose}
+          className="p-1.5 rounded-lg hover:bg-dark-700/50 text-gray-500 hover:text-white transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="p-5 space-y-5">
+        {/* Quality selector */}
+        <div>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <Film className="w-3.5 h-3.5 text-accent-400" />
+            Quality Options
+          </p>
+          <div className="grid grid-cols-4 gap-2">
+            {advancedDownloadOptions.map(opt => (
+              <button
+                key={opt.quality}
+                onClick={() => setSelectedQuality(opt)}
+                className={`px-3 py-2.5 rounded-xl text-center transition-all ${
+                  selectedQuality.quality === opt.quality
+                    ? 'bg-accent-600 text-white shadow-lg shadow-accent-500/25 ring-1 ring-accent-400/50'
+                    : 'bg-dark-700/60 text-gray-400 hover:bg-dark-600/60 hover:text-white'
+                }`}
+              >
+                <p className="font-bold text-sm">{opt.quality}</p>
+                <p className="text-[10px] opacity-70 mt-0.5">{opt.label}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Details grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Audio */}
+          <div className="bg-dark-700/40 rounded-xl p-4">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <Volume2 className="w-3.5 h-3.5 text-accent-400" />
+              Audio
+            </p>
+            <div className="space-y-2">
+              {selectedQuality.audio.map((a, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Languages className="w-3.5 h-3.5 text-gray-500" />
+                    <span className="text-sm text-white">{a.lang}</span>
+                  </div>
+                  <span className="text-xs text-accent-300 bg-accent-600/15 px-2 py-0.5 rounded-full">{a.format}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Subtitles */}
+          <div className="bg-dark-700/40 rounded-xl p-4">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <FileText className="w-3.5 h-3.5 text-accent-400" />
+              Subtitles
+            </p>
+            <div className="space-y-2">
+              {selectedQuality.subtitles.map((s, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <span className="text-sm text-white">{s.lang}</span>
+                  <span className="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">Available</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Technical details */}
+          <div className="bg-dark-700/40 rounded-xl p-4 md:col-span-2">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <Cpu className="w-3.5 h-3.5 text-accent-400" />
+              Technical Details
+            </p>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <p className="text-[10px] text-gray-500 mb-1">File Size</p>
+                <div className="flex items-center gap-1.5">
+                  <HardDrive className="w-3.5 h-3.5 text-gray-400" />
+                  <span className="text-sm text-white font-medium">{selectedQuality.size}</span>
+                </div>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-500 mb-1">Codec</p>
+                <div className="flex items-center gap-1.5">
+                  <Cpu className="w-3.5 h-3.5 text-gray-400" />
+                  <span className="text-sm text-white font-medium">{selectedQuality.codec}</span>
+                </div>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-500 mb-1">Bitrate</p>
+                <div className="flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-gray-400" />
+                  <span className="text-sm text-white font-medium">{selectedQuality.bitrate}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Download links */}
+        <div>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <Link2 className="w-3.5 h-3.5 text-accent-400" />
+            Download Links
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <motion.button
+              whileHover={{ scale: 1.02, boxShadow: '0 0 24px rgba(124,58,237,0.35)' }}
+              whileTap={{ scale: 0.98 }}
+              className="flex items-center justify-center gap-2 bg-accent-600 hover:bg-accent-500 text-white font-semibold py-3 rounded-xl transition-all shadow-lg shadow-accent-500/20"
+            >
+              <Download className="w-4 h-4" />
+              <span className="text-sm">Direct Download</span>
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex items-center justify-center gap-2 glass border border-accent-500/20 hover:border-accent-500/40 text-accent-300 hover:text-white font-semibold py-3 rounded-xl transition-all"
+            >
+              <Link2 className="w-4 h-4" />
+              <span className="text-sm">Mirror Download</span>
+            </motion.button>
+          </div>
+          <p className="text-xs text-gray-600 mt-2.5 flex items-center gap-1.5">
+            <Info className="w-3 h-3" />
+            {movieTitle} · {selectedQuality.quality} · {selectedQuality.size} · Premium only
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 // Mock "My List" avatars
 const myListAvatars = [
@@ -95,6 +321,7 @@ export default function MovieDetailPage() {
   const [userRating, setUserRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [commentLikes, setCommentLikes] = useState<Record<number, boolean>>({});
+  const [showAdvancedDownload, setShowAdvancedDownload] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -379,9 +606,15 @@ export default function MovieDetailPage() {
         {/* Mobile accordions */}
         <div className="px-3 space-y-3 pb-28">
           {movie.description && (
-            <Accordion title="Story" icon={BookOpen} defaultOpen>
-              <p className="text-gray-300 leading-relaxed mt-4 text-sm">{movie.description}</p>
-            </Accordion>
+            <div className="glass rounded-2xl overflow-hidden">
+              <div className="flex items-center gap-3 p-5 border-b border-dark-700/50">
+                <BookOpen className="w-5 h-5 text-accent-400" />
+                <span className="text-white font-semibold">Story</span>
+              </div>
+              <div className="px-5 pb-5">
+                <p className="text-gray-300 leading-relaxed mt-4 text-sm">{movie.description}</p>
+              </div>
+            </div>
           )}
           {movie.cast.length > 0 && (
             <Accordion title="Cast" icon={Users}>
@@ -648,9 +881,15 @@ export default function MovieDetailPage() {
               className="mt-10 space-y-3"
             >
               {movie.description && (
-                <Accordion title="Story" icon={BookOpen} defaultOpen>
-                  <p className="text-gray-300 leading-relaxed mt-4">{movie.description}</p>
-                </Accordion>
+                <div className="glass rounded-2xl overflow-hidden">
+                  <div className="flex items-center gap-3 p-5 border-b border-dark-700/50">
+                    <BookOpen className="w-5 h-5 text-accent-400" />
+                    <span className="text-white font-semibold">Story</span>
+                  </div>
+                  <div className="px-5 pb-5">
+                    <p className="text-gray-300 leading-relaxed mt-4">{movie.description}</p>
+                  </div>
+                </div>
               )}
 
               {movie.cast.length > 0 && (
@@ -761,11 +1000,38 @@ export default function MovieDetailPage() {
 
               <Accordion title="Download" icon={Download}>
                 <div className="mt-4 space-y-3">
-                  <p className="text-xs text-gray-500 mb-4 flex items-center gap-2">
-                    <Info className="w-4 h-4" />
-                    Downloads are available for Premium subscribers. Expires after 30 days.
-                  </p>
-                  {downloadOptions.map((opt) => (
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-xs text-gray-500 flex items-center gap-2">
+                      <Info className="w-4 h-4 flex-shrink-0" />
+                      Downloads available for Premium subscribers. Expires after 30 days.
+                    </p>
+                    <motion.button
+                      whileHover={{ scale: 1.03, boxShadow: '0 0 20px rgba(124,58,237,0.3)' }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setShowAdvancedDownload(v => !v)}
+                      className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all ml-4 ${
+                        showAdvancedDownload
+                          ? 'bg-accent-600 text-white shadow-lg shadow-accent-500/25'
+                          : 'bg-accent-600/15 border border-accent-500/30 text-accent-300 hover:bg-accent-600/25'
+                      }`}
+                    >
+                      <Zap className="w-3.5 h-3.5" />
+                      دانلود پیشرفته
+                    </motion.button>
+                  </div>
+
+                  {/* Advanced Download Panel */}
+                  <AnimatePresence>
+                    {showAdvancedDownload && (
+                      <AdvancedDownloadPanel
+                        onClose={() => setShowAdvancedDownload(false)}
+                        movieTitle={movie.title}
+                      />
+                    )}
+                  </AnimatePresence>
+
+                  {/* Standard download options */}
+                  {!showAdvancedDownload && downloadOptions.map((opt) => (
                     <div key={opt.quality} className="flex items-center justify-between bg-dark-800/50 rounded-xl p-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-accent-600/20 flex items-center justify-center">
