@@ -405,7 +405,7 @@ export default function HeroBanner({ slides: propSlides }: HeroBannerProps) {
             className="absolute inset-0"
             style={{
               background:
-                'linear-gradient(to right, #0B0B0F 0%, #0B0B0Fcc 42%, #0B0B0F66 68%, transparent 100%)',
+                'linear-gradient(to right, #080C14 0%, #080C14cc 42%, #080C1466 68%, transparent 100%)',
             }}
           />
           {/* Bottom anchor */}
@@ -413,7 +413,7 @@ export default function HeroBanner({ slides: propSlides }: HeroBannerProps) {
             className="absolute inset-0"
             style={{
               background:
-                'linear-gradient(to top, #0B0B0F 0%, #0B0B0Faa 28%, #0B0B0F44 55%, transparent 100%)',
+                'linear-gradient(to top, #080C14 0%, #080C14aa 28%, #080C1444 55%, transparent 100%)',
             }}
           />
           {/* Top header bleed */}
@@ -421,7 +421,7 @@ export default function HeroBanner({ slides: propSlides }: HeroBannerProps) {
             className="absolute inset-0"
             style={{
               background:
-                'linear-gradient(to bottom, #0B0B0F88 0%, transparent 35%)',
+                'linear-gradient(to bottom, #080C1488 0%, transparent 35%)',
             }}
           />
           {/* Radial vignette on right edge */}
@@ -429,7 +429,7 @@ export default function HeroBanner({ slides: propSlides }: HeroBannerProps) {
             className="absolute inset-0 opacity-50"
             style={{
               background:
-                'radial-gradient(ellipse at 80% 50%, transparent 35%, #0B0B0F 85%)',
+                'radial-gradient(ellipse at 80% 50%, transparent 35%, #080C14 85%)',
             }}
           />
         </motion.div>
@@ -475,7 +475,7 @@ export default function HeroBanner({ slides: propSlides }: HeroBannerProps) {
 
               {/* ── Row 2: English title ─────────────────────────────────── */}
               <h1
-                className="font-display text-white leading-[1.04] tracking-tight text-shadow-lg mb-3"
+                className="font-display leading-[1.04] tracking-tight text-shadow-lg mb-3 bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent"
                 style={{ fontSize: 'clamp(2.25rem, 6vw, 4.5rem)' }}
               >
                 {content.title}
