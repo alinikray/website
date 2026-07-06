@@ -1,3 +1,4 @@
 server/**
   api/**
   backend/**
+  dist/**
